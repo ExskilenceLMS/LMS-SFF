@@ -28,7 +28,7 @@ const DeviceSessions: React.FC = () => {
     try {
       setRefreshing(true);
       const response = await axios.get<{ sessions: DeviceSession[] }>(
-        'https://staging-exskilence-be.azurewebsites.netapi/sessions/',
+        'https://staging-exskilence-be.azurewebsites.net/api/sessions/',
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
@@ -79,7 +79,7 @@ const DeviceSessions: React.FC = () => {
       
       if (revokeAll) {
         await axios.post(
-          'https://staging-exskilence-be.azurewebsites.netapi/revoke-all/',
+          'https://staging-exskilence-be.azurewebsites.net/api/revoke-all/',
           {},
           {
             headers: {
@@ -94,7 +94,7 @@ const DeviceSessions: React.FC = () => {
         navigate('/');
       } else if (sessionToRevoke) {
         await axios.post(
-          'https://staging-exskilence-be.azurewebsites.netapi/revoke/',
+          'https://staging-exskilence-be.azurewebsites.net/api/revoke/',
           { session_id: sessionToRevoke },
           {
             headers: {

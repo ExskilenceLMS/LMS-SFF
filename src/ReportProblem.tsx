@@ -79,7 +79,7 @@ const ReportProblem: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get<TicketResponse>(
-          `https://staging-exskilence-be.azurewebsites.netapi/student/tickets/${studentId}/`
+          `https://staging-exskilence-be.azurewebsites.net/api/student/tickets/${studentId}/`
         );
         
         const formattedBugs = response.data.ticket_details.map(ticket => ({

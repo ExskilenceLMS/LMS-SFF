@@ -50,7 +50,7 @@ const Courses: React.FC = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          `https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/mycourses/${studentId}/`
+          `https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/mycourses/${studentId}/`
         );
   
         const colorMapping: { [key: string]: string } = {

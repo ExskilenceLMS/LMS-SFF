@@ -203,7 +203,7 @@ useEffect(() => {
         try {
             setLoading(true);
             setDisablePreviousBtn(true);
-            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/learningmodules/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/`);
+            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/learningmodules/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/`);
             setChapters(response.data);
             var variable=response.data[0].day_completed;
             
@@ -258,7 +258,7 @@ useEffect(() => {
                 }
             }
 
-            const response1 = await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/lessons/status/", {
+            const response1 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
                 "student_id": studentId,
                 "subject": subject,
                 "subject_id": subjectId,
@@ -286,7 +286,7 @@ useEffect(() => {
         try {
             setLoading(true);
             setDisablePreviousBtn(true);
-            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/practicemcq/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`);
+            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`);
             setMcqQuestions(response.data);
             setCurrentMCQIndex(0);
             setLoading(false);
@@ -302,7 +302,7 @@ useEffect(() => {
         try {
             setLoading(true);
             setDisablePreviousBtn(true);
-            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/practicecoding/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`);
+            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/practicecoding/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`);
             const codingQuestionsData = response.data.map((question: any, index: number) => ({
                 id: index + 1,
                 question: question.Qn,
@@ -342,7 +342,7 @@ useEffect(() => {
     
             if (!isUserInitiated) {
                 setDisablePreviousBtn(true);
-                const response1 = await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/lessons/status/", {
+                const response1 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
                     "student_id": studentId,
                     "subject": subject,
                     "subject_id": subjectId,
@@ -584,7 +584,7 @@ const isNextButtonDisabled = useCallback(() => {
         };
 
         setDisablePreviousBtn(true);
-        axios.post("https://staging-exskilence-be.azurewebsites.netapi/student/practicemcq/submit/", submissionData)
+        axios.post("https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/submit/", submissionData)
             .then(response => {
                 setMcqQuestions(prevQuestions =>
                     prevQuestions.map(question =>
@@ -1018,7 +1018,7 @@ const handleNext = useCallback(async () => {
             } else {
                 const isLastContent = currentLessonIndex === currentChapter.sub_topic_data[currentSubTopicIndex].lesson.length - 1;
                 if (isLastContent) {
-                    const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/lessons/status/", {
+                    const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
                         "student_id": studentId,
                         "subject": subject,
                         "subject_id": subjectId,
@@ -1076,7 +1076,7 @@ const handleNext = useCallback(async () => {
             } else {
                 const isLastContent = currentNotesIndex === currentChapter.sub_topic_data[currentSubTopicIndex].notes.length - 1;
                 if (isLastContent) {
-                    const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/lessons/status/", {
+                    const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
                         "student_id": studentId,
                         "subject": subject,
                         "subject_id": subjectId,
@@ -1141,7 +1141,7 @@ const handleNext = useCallback(async () => {
                         });
                         const isLastContent = contentOrder[contentOrder.length - 1] === 'mcqQuestions';
                         if (isLastContent) {
-                            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/lessons/status/", {
+                            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
                                 "student_id": studentId,
                                 "subject": subject,
                                 "subject_id": subjectId,
@@ -1203,7 +1203,7 @@ const handleNext = useCallback(async () => {
         });
         const isLastContent = contentOrder[contentOrder.length - 1] === 'codingQuestions';
         if (isLastContent) {
-            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/lessons/status/", {
+            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
                 "student_id": studentId,
                 "subject": subject,
                 "subject_id": subjectId,
@@ -1245,7 +1245,7 @@ const handleNext = useCallback(async () => {
         } else {
             setDisableNextBtn(true);
             setDisablePreviousBtn(true);
-            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/lessons/status/", {
+            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
                 "student_id": studentId,
                 "subject": subject,
                 "subject_id": subjectId,

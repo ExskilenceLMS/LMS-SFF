@@ -70,7 +70,7 @@ const encryptedStudentId = sessionStorage.getItem('StudentId');
   
     try {
       const response = await axios.put(
-        'https://staging-exskilence-be.azurewebsites.netapi/student/ticket/comments/',
+        'https://staging-exskilence-be.azurewebsites.net/api/student/ticket/comments/',
         {
           student_id: studentId,
           comment: comment,

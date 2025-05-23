@@ -86,7 +86,7 @@ useEffect(() => {
     const currentPath = location.pathname;
     if (studentId && testId  && !testCompleted && (currentPath === '/test-section' || currentPath === '/mcq-temp' || currentPath === '/coding-temp')) {
       const fetchTimeLeft = () => {
-        axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/duration/${studentId}/${testId}/`)
+        axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/duration/${studentId}/${testId}/`)
           .then(response => {
             const { time_left } = response.data;
             setTimeInSeconds(time_left);
@@ -124,7 +124,7 @@ useEffect(() => {
               setShowModal(true);
             }
             setTestCompleted(true);
-            axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/test/submit/${studentId}/${testId}/`)
+            axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/test/submit/${studentId}/${testId}/`)
               .then(() => {
                 sessionStorage.removeItem("timer");
               })

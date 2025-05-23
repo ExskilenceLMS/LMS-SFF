@@ -374,7 +374,7 @@ const handleSubmit = async () => {
     };
 
     const response = await axios.put(
-      "https://staging-exskilence-be.azurewebsites.netapi/student/coding/",
+      "https://staging-exskilence-be.azurewebsites.net/api/student/coding/",
       postData
     );
 

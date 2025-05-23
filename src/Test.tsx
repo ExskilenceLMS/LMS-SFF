@@ -64,7 +64,7 @@ const Test: React.FC = () => {
     const fetchTestDetails = async () => {
       try {
         const response = await axios.get(
-          `https://staging-exskilence-be.azurewebsites.netapi/student/testdetails/${studentId}/`
+          `https://staging-exskilence-be.azurewebsites.net/api/student/testdetails/${studentId}/`
         );
         setTestDetails(response.data.test_details);
         setFilteredDetails(response.data.test_details);

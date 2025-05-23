@@ -86,7 +86,7 @@ const RaiseTicket: React.FC<RaiseTicketProps> = ({ show, onHide, studentId: prop
       };
 
       const response = await axios.post(
-        'https://staging-exskilence-be.azurewebsites.netapi/student/tickets/',
+        'https://staging-exskilence-be.azurewebsites.net/api/student/tickets/',
         payload
       );
       

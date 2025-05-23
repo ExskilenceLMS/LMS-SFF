@@ -50,7 +50,7 @@ const McqTemplate: React.FC = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/test/questions/${studentId}/${testId}/mcq/`);
+        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/test/questions/${studentId}/${testId}/mcq/`);
         const shuffledQuestions = response.data.qns_data.mcq.map((q: Question) => ({
           ...q,
           options: shuffleArray(q.options)
@@ -109,7 +109,7 @@ const McqTemplate: React.FC = () => {
       console.log("Ranjitha ");
       console.log(questions[currentQuestion].Qn_name);
       try {
-        await axios.put("https://staging-exskilence-be.azurewebsites.netapi/student/test/questions/submit/mcq/", {
+        await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/test/questions/submit/mcq/", {
           student_id: studentId,
           question_id: questions[currentQuestion].Qn_name || "ranjitha" ,
           test_id: testId,

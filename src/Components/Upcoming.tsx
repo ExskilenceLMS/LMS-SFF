@@ -34,7 +34,7 @@ const Upcoming: React.FC = () => {
   useEffect(() => {
     const fetchDiscussions = async () => {
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/upcomming/sessions/${studentId}/`);
+        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/upcomming/sessions/${studentId}/`);
         setDiscussions(response.data.map((item: any) => ({
           title: item.title,
           week: item.title,
@@ -50,7 +50,7 @@ const Upcoming: React.FC = () => {
 
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/upcomming/events/${courseId}/${batchId}/`);
+        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/upcomming/events/${courseId}/${batchId}/`);
         setEvents(response.data.map((event: any) => ({
           title: event.title,
           date: event.date,

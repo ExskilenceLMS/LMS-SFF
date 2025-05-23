@@ -56,7 +56,7 @@ const Profile: React.FC = () => {
       setLoading(true);
       try {
         const response = await axios.get<ProfileType>(
-          `https://staging-exskilence-be.azurewebsites.netapi/student/profile/${studentId}/`
+          `https://staging-exskilence-be.azurewebsites.net/api/student/profile/${studentId}/`
         );
         setProfile(response.data);
       } catch (error) {

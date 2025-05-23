@@ -55,7 +55,7 @@ const SubjectOverview: React.FC = () => {
     const fetchDataFromAPI = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/roadmap/${studentId}/${courseId}/${subjectId}/`);
+        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/roadmap/${studentId}/${courseId}/${subjectId}/`);
         const weeks = response.data.weeks;
 
         const transformedData = weeks.map((week: { week: any; startDate: any; endDate: any; totalHours: any; topics: any; days: any[]; }) => ({
@@ -138,7 +138,7 @@ const SubjectOverview: React.FC = () => {
   try {
     if (topics && topics.includes("Weekly Test")) {
       const response = await axios.get(
-        `https://staging-exskilence-be.azurewebsites.netapi/student/test/weekly/${studentId}/${weekNumber}/${subjectId}/`
+        `https://staging-exskilence-be.azurewebsites.net/api/student/test/weekly/${studentId}/${weekNumber}/${subjectId}/`
       );
 
       if (response.data.test_id) {
@@ -149,7 +149,7 @@ const SubjectOverview: React.FC = () => {
       navigate("/test-introduction");
     } else {
       if (day_status === "Start") {
-        await axios.post(`https://staging-exskilence-be.azurewebsites.netapi/student/add/days/`, {
+        await axios.post(`https://staging-exskilence-be.azurewebsites.net/api/student/add/days/`, {
           student_id: studentId,
           subject: subject,
           subject_id: subjectId,

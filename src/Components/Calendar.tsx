@@ -20,7 +20,7 @@ const Calendar: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/event/calender/${studentId}/`);
+        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/event/calender/${studentId}/`);
         setData(response.data);
         setYear(parseInt(response.data.year));
         setMonth(parseInt(response.data.month)); 

@@ -57,7 +57,7 @@ const Activity: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/hourspent/${studentId}/n/`);
+        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/hourspent/${studentId}/n/`);
         setData(response.data.hours);
         setWeeklyLimit(response.data.weekly_limit);
         setMinThreshold(response.data.daily_limit);
@@ -80,7 +80,7 @@ const Activity: React.FC = () => {
 
   const fetchHoursSpentForWeek = async (weekNumber: number) => {
     try {
-      const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/hourspent/${studentId}/${weekNumber}/`);
+      const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/hourspent/${studentId}/${weekNumber}/`);
       setData(response.data.hours);
       setMinThreshold(response.data.daily_limit);
       const maxHourValue = Math.max(...response.data.hours.map((hour: { hours: number }) => hour.hours));

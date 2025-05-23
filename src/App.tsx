@@ -61,7 +61,7 @@ function App() {
   }, []);
 
   const handleLogout = useCallback(() => {
-    axios.get(`https://staging-exskilence-be.azurewebsites.netapi/logout/${studentId}/`);
+    axios.get(`https://staging-exskilence-be.azurewebsites.net/api/logout/${studentId}/`);
     sessionStorage.clear();
     window.location.href = '/'; 
   }, [studentId]);

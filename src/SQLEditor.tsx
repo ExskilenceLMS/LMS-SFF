@@ -91,7 +91,7 @@ const SQLEditor: React.FC = () => {
     const fetchQuestions = async () => {
       try {
         const response = await axios.get(
-          `https://staging-exskilence-be.azurewebsites.netapi/student/practicecoding/` +
+          `https://staging-exskilence-be.azurewebsites.net/api/student/practicecoding/` +
           `${studentId}/` +
           `${subject}/` +
           `${subjectId}/` +
@@ -129,7 +129,7 @@ const SQLEditor: React.FC = () => {
     const fetchTables = async () => {
       try {
         const response = await axios.get(
-          `https://staging-exskilence-be.azurewebsites.netapi/student/practicecoding/tables/`
+          `https://staging-exskilence-be.azurewebsites.net/api/student/practicecoding/tables/`
         );
         const tables = response.data;
         setAvailableTables(tables);
@@ -336,7 +336,7 @@ const SQLEditor: React.FC = () => {
         TestCases: testCases,
       };
       if (updatedSqlQuery) {
-        const url = "https://staging-exskilence-be.azurewebsites.netapi/student/coding/sql/";
+        const url = "https://staging-exskilence-be.azurewebsites.net/api/student/coding/sql/";
         setExecutingQuery(true);
         const response = await fetch(url, {
           method: "POST",
@@ -391,7 +391,7 @@ const SQLEditor: React.FC = () => {
       };
 
       const response = await axios.put(
-        "https://staging-exskilence-be.azurewebsites.netapi/student/coding/",
+        "https://staging-exskilence-be.azurewebsites.net/api/student/coding/",
         postData
       );
 
