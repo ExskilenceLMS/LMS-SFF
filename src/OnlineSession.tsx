@@ -41,7 +41,7 @@ const OnlineSession: React.FC = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `https://live-exskilence-be.azurewebsites.net/api/student/sessions/${studentId}/`
+          `https://staging-exskilence-be.azurewebsites.netapi/student/sessions/${studentId}/`
         );
         const apiSessions = response.data as ApiSession[];
 

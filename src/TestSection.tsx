@@ -48,7 +48,7 @@ const TestSection: React.FC = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://live-exskilence-be.azurewebsites.net/api/student/test/section/${studentId}/${testId}/`
+          `https://staging-exskilence-be.azurewebsites.netapi/student/test/section/${studentId}/${testId}/`
         );
 
         if (response.status === 200) {
@@ -75,7 +75,7 @@ const TestSection: React.FC = () => {
 
   const confirmSubmitTest = async () => {
     try {
-      await axios.get(`https://live-exskilence-be.azurewebsites.net/api/student/test/submit/${studentId}/${testId}/`);
+      await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/test/submit/${studentId}/${testId}/`);
       sessionStorage.setItem("time", "0");
       setShowSubmitConfirmation(false);
       setShowModal(true);

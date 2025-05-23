@@ -33,7 +33,7 @@ function DashBoardProfile() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://live-exskilence-be.azurewebsites.net/api/studentdashboard/summary/${studentId}/`
+          `https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/summary/${studentId}/`
         );
         setData(response.data);
       } catch (error) {

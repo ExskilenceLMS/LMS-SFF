@@ -41,7 +41,7 @@ const Header: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = useCallback(() => {
-    axios.get(`https://live-exskilence-be.azurewebsites.net/api/logout/${studentId}/`)
+    axios.get(`https://staging-exskilence-be.azurewebsites.netapi/logout/${studentId}/`)
     sessionStorage.clear();
     navigate('/');
     setShowUserMenu(false);

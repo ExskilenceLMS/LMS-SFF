@@ -37,7 +37,7 @@ const TestingMCQS: React.FC = () => {
     const fetchQuestions = async () => {
       try {
         const response = await axios.get(
-          "https://live-exskilence-be.azurewebsites.net//mcqtesting/"
+          "https://staging-exskilence-be.azurewebsites.net/mcqtesting/"
         );
 
         const shuffledQuestions = response.data.map((q: Question) => ({
@@ -298,7 +298,7 @@ export default TestingMCQS;
 //     const fetchQuestions = async () => {
 //       try {
 //         const response = await axios.get(
-//           "https://live-exskilence-be.azurewebsites.net//mcqtesting/"
+//           "https://staging-exskilence-be.azurewebsites.net/mcqtesting/"
 //         );
 
 //         const shuffledQuestions = response.data.map((q: Question) => ({
@@ -343,7 +343,7 @@ export default TestingMCQS;
 //         for (let i = 0; i < parsedAnswers.length; i++) {
 //           if (parsedAnswers[i] !== null) {
 //             try {
-//               await axios.post("https://live-exskilence-be.azurewebsites.net//mcqtesting/submit", {
+//               await axios.post("https://staging-exskilence-be.azurewebsites.net/mcqtesting/submit", {
 //                 questionId: questions[i].id,
 //                 answer: parsedAnswers[i],
 //               });
@@ -366,7 +366,7 @@ export default TestingMCQS;
 //         const parsedAnswers = JSON.parse(storedAnswers);
 //         for (let i = 0; i < parsedAnswers.length; i++) {
 //           if (parsedAnswers[i] !== null) {
-//             axios.post("https://live-exskilence-be.azurewebsites.net//mcqtesting/submit", {
+//             axios.post("https://staging-exskilence-be.azurewebsites.net/mcqtesting/submit", {
 //               questionId: questions[i].id,
 //               answer: parsedAnswers[i],
 //             }).catch(error => {
@@ -425,7 +425,7 @@ export default TestingMCQS;
 
 //     try {
 //       // Simulate API call
-//       await axios.post("https://live-exskilence-be.azurewebsites.net//mcqtesting/submit", {
+//       await axios.post("https://staging-exskilence-be.azurewebsites.net/mcqtesting/submit", {
 //         questionId: questions[currentQuestion].id,
 //         answer: selectedOption,
 //       });

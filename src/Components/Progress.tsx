@@ -69,7 +69,7 @@ function Progress() {
     const fetchData = async () => {
       try {
         const response = await axios.get<ApiResponse>(
-          `https://live-exskilence-be.azurewebsites.net/api/studentdashboard/weeklyprogress/${studentId}/`
+          `https://staging-exskilence-be.azurewebsites.netapi/studentdashboard/weeklyprogress/${studentId}/`
         );
         const data = response.data;
         setApiData(data);

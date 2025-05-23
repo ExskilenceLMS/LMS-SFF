@@ -558,7 +558,7 @@ const encryptedStudentId = sessionStorage.getItem('StudentId');
           };
     
           const response = await axios.put(
-            "https://live-exskilence-be.azurewebsites.net/api/student/coding/",
+            "https://staging-exskilence-be.azurewebsites.netapi/student/coding/",
             postData
           );
     

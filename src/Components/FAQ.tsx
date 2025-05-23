@@ -11,7 +11,7 @@ const FAQ: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
-        "https://live-exskilence-be.azurewebsites.net/api/student/faq/"
+        "https://staging-exskilence-be.azurewebsites.netapi/student/faq/"
       );
       const blob = await response.blob();
       const reader = new FileReader();

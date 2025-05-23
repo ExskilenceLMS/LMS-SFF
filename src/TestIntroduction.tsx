@@ -28,7 +28,7 @@ const TestIntroduction: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     if (testId && studentId) {
-      axios.get(`https://live-exskilence-be.azurewebsites.net/api/student/test/instuction/${studentId}/${testId}/`)
+      axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/test/instuction/${studentId}/${testId}/`)
         .then(response => {
           setLoading(false);
           setDuration(response.data.duration);

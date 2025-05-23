@@ -92,7 +92,7 @@ const TestSQLCoding: React.FC = () => {
     const fetchQuestions = async () => {
       try {
         const response = await axios.get(
-          `https://live-exskilence-be.azurewebsites.net/api/student/test/questions/${studentId}/${testId}/coding/`
+          `https://staging-exskilence-be.azurewebsites.netapi/student/test/questions/${studentId}/${testId}/coding/`
         );
 
         const questionsWithSavedCode = response.data.qns_data.coding.map((q: Question) => {
@@ -312,7 +312,7 @@ const TestSQLCoding: React.FC = () => {
         TestCases: testCases,
       };
       if (updatedSqlQuery) {
-        const url = "https://live-exskilence-be.azurewebsites.net/api/student/coding/sql/";
+        const url = "https://staging-exskilence-be.azurewebsites.netapi/student/coding/sql/";
         setExecutingQuery(true);
         const response = await fetch(url, {
           method: "POST",
@@ -368,7 +368,7 @@ const TestSQLCoding: React.FC = () => {
     };
 
     const response = await axios.put(
-      "https://live-exskilence-be.azurewebsites.net/api/student/test/questions/submit/coding/",
+      "https://staging-exskilence-be.azurewebsites.netapi/student/test/questions/submit/coding/",
       postData
     );
 

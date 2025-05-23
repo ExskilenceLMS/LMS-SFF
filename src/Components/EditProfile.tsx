@@ -43,7 +43,7 @@ const EditProfile: React.FC = () => {
   // Constants
   const DEGREE_OPTIONS = ['Select Degree', 'BE', '12th', '10th'];
   const BRANCH_OPTIONS_12TH = ['Select Branch', 'PCMB', 'PCMC', 'PCME'];
-  const API_BASE_URL = 'https://live-exskilence-be.azurewebsites.net//api';
+  const API_BASE_URL = 'https://staging-exskilence-be.azurewebsites.net/api';
 
   const YEAR_OPTIONS = (() => {
     const currentYear = new Date().getFullYear();

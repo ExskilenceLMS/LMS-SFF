@@ -124,7 +124,7 @@ const PyEditor: React.FC = () => {
     const fetchQuestions = async () => {
       try {
         const response = await axios.get(
-          `https://live-exskilence-be.azurewebsites.net/api/student/practicecoding/` +
+          `https://staging-exskilence-be.azurewebsites.netapi/student/practicecoding/` +
           `${studentId}/` +
           `${subject}/` +
           `${subjectId}/` +
@@ -366,7 +366,7 @@ const PyEditor: React.FC = () => {
       };
 
       const response = await axios.post(
-        "https://live-exskilence-be.azurewebsites.net/api/student/coding/py/",
+        "https://staging-exskilence-be.azurewebsites.netapi/student/coding/py/",
         postData
       );
 
@@ -464,7 +464,7 @@ const PyEditor: React.FC = () => {
       };
 
       const response = await axios.put(
-        "https://live-exskilence-be.azurewebsites.net/api/student/coding/",
+        "https://staging-exskilence-be.azurewebsites.netapi/student/coding/",
         postData
       );
 

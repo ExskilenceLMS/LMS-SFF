@@ -114,7 +114,7 @@ const TestReport: React.FC = () => {
     setLoading(true);
     const fetchData = async () => {
       try {
-        const response = await axios.get(`https://live-exskilence-be.azurewebsites.net/api/student/test/report/${studentId}/${testId}/`);
+        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.netapi/student/test/report/${studentId}/${testId}/`);
         const apiData = response.data;
         setData({
           timeTaken: `${apiData.test_summary.time_taken_for_completion} / ${apiData.test_summary.total_time}`,

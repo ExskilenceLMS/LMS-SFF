@@ -66,7 +66,7 @@ const Login: React.FC = () => {
                 const fetchData = async () => {
                   try {
                     const response = await axios.get(
-                      `https://live-exskilence-be.azurewebsites.net/api/login/${email}/`
+                      `https://staging-exskilence-be.azurewebsites.netapi/login/${email}/`
                     );
                     
                     const enctyptedStudentId = CryptoJS.AES.encrypt(response.data.student_id, secretKey).toString();
