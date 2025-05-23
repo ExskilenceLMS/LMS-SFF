@@ -122,7 +122,7 @@ const Login: React.FC = () => {
         <div className="row w-100">
             <div className="col-12 col-md-12 col-lg-7 d-flex align-items-center justify-content-center">
                 <div className="p-4 text-center" style={{ borderRadius: '15px', color: '#003e80', backgroundColor: 'transparent' }}>
-                    <h2 className="font-weight-bold  mb-4">Welcome to Exskilence Upskilling Program</h2>
+                    <h2 className="font-weight-bold  mb-4">Developer Varun</h2>
                     <p style={{ fontSize: '1.25rem', lineHeight: '1.8', textAlign:'justify' }}>
                         Upskilling refers to the process of acquiring new skills or enhancing existing ones to stay relevant in the ever-evolving job market. As industries rapidly change due to technological advancements and shifting economic landscapes, continuous learning has become essential for career growth and adaptability. By engaging in upskilling, individuals can improve their expertise, increase job opportunities, and remain competitive in their field. For organizations, investing in employee upskilling fosters innovation, boosts productivity, and helps retain top talent, ensuring that the workforce remains agile and future-ready.
                     </p>
