@@ -53,3 +53,16 @@
   align-items: center;
   z-index: 1000;
 }
+
+
+.nav-link.custom-tab {
+  margin-bottom: 10px;
+  box-shadow: #888 1px 2px 5px 0px;
+  background-color: transparent;
+  color: black;
+}
+
+.nav-link.custom-tab.active {
+  background-color: black;
+  color: white;
+}

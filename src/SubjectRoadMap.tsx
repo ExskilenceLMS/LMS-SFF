@@ -618,7 +618,7 @@ const isNextButtonDisabled = useCallback(() => {
             setPdfError(false);
             setLoading(true);
 
-            fetch('https://staging-exskilence-be.azurewebsites.netmedia/', {
+            fetch('https://staging-exskilence-be.azurewebsites.net/media/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ file_url: notesUrl })
@@ -646,7 +646,7 @@ const isNextButtonDisabled = useCallback(() => {
             setVideoError(false);
             setLoading(true);
 
-            fetch('https://staging-exskilence-be.azurewebsites.netmedia/', {
+            fetch('https://staging-exskilence-be.azurewebsites.net/media/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ file_url: lessonVideoUrl })
