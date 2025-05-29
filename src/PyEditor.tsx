@@ -101,7 +101,10 @@ const PyEditor: React.FC = () => {
   const encryptedDayNumber = sessionStorage.getItem('DayNumber');
   const decryptedDayNumber = CryptoJS.AES.decrypt(encryptedDayNumber!, secretKey).toString(CryptoJS.enc.Utf8);
   const dayNumber = decryptedDayNumber;
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
   useEffect(() => {
     const script = document.createElement('script');
     // script.src = "https://cdn.jsdelivr.net/npm/skulpt@1.1.0/dist/skulpt.min.js";
@@ -122,15 +125,16 @@ const PyEditor: React.FC = () => {
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      try {
-        const response = await axios.get(
-          `https://staging-exskilence-be.azurewebsites.net/api/student/practicecoding/` +
+      const url=`https://staging-exskilence-be.azurewebsites.net/api/student/practicecoding/` +
           `${studentId}/` +
           `${subject}/` +
           `${subjectId}/` +
           `${dayNumber}/` +
           `${weekNumber}/` +
           `${sessionStorage.getItem("currentSubTopicId")}/`
+      try {
+        const response = await axios.get(
+          url
         );
         
         const questionsWithSavedCode = response.data.map((q: Question) => {
@@ -155,10 +159,32 @@ const PyEditor: React.FC = () => {
               questionsWithSavedCode[initialIndex]?.Ans + '\n' + questionsWithSavedCode[initialIndex]?.FunctionCall || ''); 
         setLoading(false);
 
-      } catch (error) {
-        console.error("Error fetching the questions:", error);
-        setLoading(false);
-      }
+      } catch (innerError: any) {
+            setLoading(false);
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the python questions error:", loggingError);
+            }
+ 
+            console.error("Error fetching python questions data:", innerError);
+            } 
     };
 
     fetchQuestions();
@@ -349,7 +375,7 @@ const PyEditor: React.FC = () => {
         setOutput(prev => prev + err.toString());
       }
     );
-
+    const url="https://staging-exskilence-be.azurewebsites.net/api/student/coding/py/"
     try {
       const postData = {
         student_id: studentId,
@@ -366,7 +392,7 @@ const PyEditor: React.FC = () => {
       };
 
       const response = await axios.post(
-        "https://staging-exskilence-be.azurewebsites.net/api/student/coding/py/",
+        url,
         postData
       );
 
@@ -437,11 +463,34 @@ const PyEditor: React.FC = () => {
         setSuccessMessage("Wrong Answer");
         setAdditionalMessage("You have not passed all the test cases.");
       }
-    } catch (error) {
-      console.error("Error executing the code:", error);
+    } catch (innerError: any) {
       setSuccessMessage("Error");
       setAdditionalMessage("There was an error executing the code.");
-    } finally {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the python code execute error:", loggingError);
+            }
+ 
+            console.error("Error fetching python code execute data:", innerError);
+            }
+             finally {
       setProcessing(false);
     }
   };
@@ -449,6 +498,7 @@ const PyEditor: React.FC = () => {
   const handleSubmit = async () => {
     setIsSubmitted(true);
     setProcessing(true);
+    const url="https://staging-exskilence-be.azurewebsites.net/api/student/coding/"
     try {
       const postData = {
         student_id: studentId,
@@ -464,7 +514,7 @@ const PyEditor: React.FC = () => {
       };
 
       const response = await axios.put(
-        "https://staging-exskilence-be.azurewebsites.net/api/student/coding/",
+        url,
         postData
       );
 
@@ -478,11 +528,35 @@ const PyEditor: React.FC = () => {
       const codeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
       sessionStorage.setItem(codeKey, Ans);
  
-    } catch (error) {
-      console.error("Error executing the code:", error);
+    } 
+    
+    catch (innerError: any) {
       setSuccessMessage("Error");
-      setAdditionalMessage("There was an error for submitting the code.");
-    } finally {
+       setAdditionalMessage("There was an error for submitting the code.");
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the python code submit error:", loggingError);
+            }
+ 
+            console.error("Error fetching python code submit data:", innerError);
+            } finally {
       setProcessing(false);
     }
   };

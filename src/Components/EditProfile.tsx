@@ -79,6 +79,9 @@ const EditProfile: React.FC = () => {
   const [colleges, setColleges] = useState<College>({});
   const [branches, setBranches] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
 
   const encryptedStudentId = sessionStorage.getItem('StudentId');
   const studentId = encryptedStudentId 
@@ -86,22 +89,48 @@ const EditProfile: React.FC = () => {
     : '';
 
   const fetchColleges = useCallback(async () => {
+    const url=`${API_BASE_URL}/colleges/`
     try {
-      const response = await axios.get(`${API_BASE_URL}/colleges/`);
+      const response = await axios.get(url);
       setColleges(response.data);
       return response.data;
-    } catch (error) {
-      console.error('Error fetching colleges:', error);
-      return {};
-    }
+    } 
+    catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error fetching Colleges in EditProfile data:", loggingError);
+                return {};
+            }
+ 
+            console.error("Error fetching Colleges in EditProfile data:", innerError);
+            return {};
+            }
+    
   }, [API_BASE_URL]);
 
   const fetchProfileData = useCallback(async () => {
     if (!studentId) return;
-    
+    const url=`${API_BASE_URL}/student/profile/${studentId}/`
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/student/profile/${studentId}/`);
+      const response = await axios.get(url);
       const { profile_details, education_details, social_media } = response.data;
 
       setProfileDetails({
@@ -127,9 +156,33 @@ const EditProfile: React.FC = () => {
           video: social_media.video || ''
         });
       }
-    } catch (error) {
-      console.error('Error fetching profile data:', error);
-    } finally {
+    } 
+    catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the profile error in Edit profile:", loggingError);
+            }
+ 
+            console.error("Error fetching profile data in Edit profile:", innerError);
+            }
+     finally {
       setLoading(false);
     }
   }, [API_BASE_URL, studentId]);
@@ -295,10 +348,10 @@ const EditProfile: React.FC = () => {
       video: socialMedia.video,
       education_details: validEducation
     };
-
+    const url=`${API_BASE_URL}/student/profile/`
     try {
       const response = await axios.put(
-        `${API_BASE_URL}/student/profile/`,
+        url,
         requestData
       );
 
@@ -306,10 +359,36 @@ const EditProfile: React.FC = () => {
         alert('Profile updated successfully!');
         navigate('/Profile');
       }
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } 
+    catch (innerError: any) {
       alert('Failed to update profile. Please try again.');
-    }
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName
+                
+                ,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the updating profile:", loggingError);
+            }
+ 
+            console.error("Error updating profile:", innerError);
+            
+            }
   };
 
   if (loading) {

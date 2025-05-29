@@ -50,12 +50,16 @@ const SubjectOverview: React.FC = () => {
   const [btnClickLoading, setBtnClickLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [openWeeks, setOpenWeeks] = useState<Set<number>>(new Set());
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
   useEffect(() => {
     const fetchDataFromAPI = async () => {
+      const url=`https://staging-exskilence-be.azurewebsites.net/api/roadmap/${studentId}/${courseId}/${subjectId}/`
       try {
         setLoading(true);
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/roadmap/${studentId}/${courseId}/${subjectId}/`);
+        const response = await axios.get(url);
         const weeks = response.data.weeks;
 
         const transformedData = weeks.map((week: { week: any; startDate: any; endDate: any; totalHours: any; topics: any; days: any[]; }) => ({
@@ -77,9 +81,32 @@ const SubjectOverview: React.FC = () => {
         }));
 
         setData(transformedData);
-      } catch (error) {
+      } catch (innerError: any) {
         setError('No data found');
-      } finally {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the subject overview error:", loggingError);
+            }
+ 
+            console.error("Error fetching suject overview data:", innerError);
+            } finally {
         setLoading(false);
       }
     };
@@ -134,11 +161,12 @@ const SubjectOverview: React.FC = () => {
   const encryptedWeekNumber = CryptoJS.AES.encrypt(weekNumber.toString(), secretKey).toString();
   sessionStorage.setItem("DayNumber", encryptedDayKey);
   sessionStorage.setItem("WeekNumber", encryptedWeekNumber);
-
+  const url= `https://staging-exskilence-be.azurewebsites.net/api/student/test/weekly/${studentId}/${weekNumber}/${subjectId}/`
+  const url1=`https://staging-exskilence-be.azurewebsites.net/api/student/add/days/`
   try {
     if (topics && topics.includes("Weekly Test")) {
       const response = await axios.get(
-        `https://staging-exskilence-be.azurewebsites.net/api/student/test/weekly/${studentId}/${weekNumber}/${subjectId}/`
+       url
       );
 
       if (response.data.test_id) {
@@ -149,7 +177,7 @@ const SubjectOverview: React.FC = () => {
       navigate("/test-introduction");
     } else {
       if (day_status === "Start") {
-        await axios.post(`https://staging-exskilence-be.azurewebsites.net/api/student/add/days/`, {
+        await axios.post(url1, {
           student_id: studentId,
           subject: subject,
           subject_id: subjectId,
@@ -160,9 +188,32 @@ const SubjectOverview: React.FC = () => {
 
       navigate("/subject-roadmap");
     }
-  } catch (error) {
-    console.error("Error during navigation logic:", error);
-  } finally {
+  } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the navigation logic error:", loggingError);
+            }
+ 
+            console.error("Error fetching navigation logic data:", innerError);
+            }
+finally {
     setBtnClickLoading(false);
   }
 };

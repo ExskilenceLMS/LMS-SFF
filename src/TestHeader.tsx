@@ -38,7 +38,10 @@ const TestHeader: React.FC = () => {
   const encryptedDayNumber = sessionStorage.getItem('DayNumber') || "";
   const decryptedDayNumber = useMemo(() => CryptoJS.AES.decrypt(encryptedDayNumber!, secretKey).toString(CryptoJS.enc.Utf8), [encryptedDayNumber]);
   const dayNumber = decryptedDayNumber;
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
 useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
     const key = e.key;
@@ -85,17 +88,41 @@ useEffect(() => {
     isMounted.current = true;
     const currentPath = location.pathname;
     if (studentId && testId  && !testCompleted && (currentPath === '/test-section' || currentPath === '/mcq-temp' || currentPath === '/coding-temp')) {
-      const fetchTimeLeft = () => {
-        axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/duration/${studentId}/${testId}/`)
-          .then(response => {
-            const { time_left } = response.data;
-            setTimeInSeconds(time_left);
-            sessionStorage.setItem("timer", time_left);
-          })
-          .catch(error => {
-            console.error("Error fetching time left:", error);
-          });
-      };
+      const fetchTimeLeft = async () => {
+  const url = `https://staging-exskilence-be.azurewebsites.net/api/student/duration/${studentId}/${testId}/`;
+
+  try {
+    const response = await axios.get(url);
+    const { time_left } = response.data;
+    setTimeInSeconds(time_left);
+    sessionStorage.setItem("timer", time_left);
+  } catch (innerError:any) {
+    const errorData = innerError.response?.data || {
+      message: innerError.message,
+      stack: innerError.stack,
+    };
+
+    const body = {
+      student_id: actualStudentId,
+      Email: actualEmail,
+      Name: actualName,
+      URL_and_Body: `${url}\n + ""`,
+      error: errorData.error || errorData,
+    };
+
+    try {
+      await axios.post(
+        "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+        body
+      );
+    } catch (loggingError) {
+      console.error("Error logging the time left error:", loggingError);
+    }
+
+    console.error("Error fetching test header data:", innerError);
+  }
+};
+
 
       if (isMounted.current) {
         fetchTimeLeft();
@@ -110,35 +137,75 @@ useEffect(() => {
     }
   }, [studentId, testId, location.pathname, testCompleted]);
 
-  useEffect(() => {
-    if (timeInSeconds > 0 && !testCompleted) {
-      const intervalId = setInterval(() => {
-        setTimeInSeconds((prevTime) => {
-          const newTime = prevTime - 1;
-          sessionStorage.setItem("timer", newTime.toString());
-          if (newTime <= 0) {
-            clearInterval(intervalId);
-            sessionStorage.setItem("timer", "0");
-            const currentPath = location.pathname;
-            if (currentPath === '/test-section' || currentPath === '/mcq-temp' || currentPath === '/coding-temp') {
-              setShowModal(true);
-            }
-            setTestCompleted(true);
-            axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/test/submit/${studentId}/${testId}/`)
-              .then(() => {
-                sessionStorage.removeItem("timer");
-              })
-              .catch(error => {
-                console.error("Error submitting test:", error);
-              });
-            return 0;
+useEffect(() => {
+  if (timeInSeconds > 0 && !testCompleted) {
+    const intervalId = setInterval(() => {
+      setTimeInSeconds((prevTime) => {
+        const newTime = prevTime - 1;
+        sessionStorage.setItem("timer", newTime.toString());
+
+        if (newTime <= 0) {
+          clearInterval(intervalId);
+          sessionStorage.setItem("timer", "0");
+          const currentPath = location.pathname;
+
+          if (
+            currentPath === '/test-section' ||
+            currentPath === '/mcq-temp' ||
+            currentPath === '/coding-temp'
+          ) {
+            setShowModal(true);
           }
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(intervalId);
-    }
-  }, [timeInSeconds, navigate, studentId, testId, testCompleted, location.pathname]);
+
+          setTestCompleted(true);
+
+          const submitTest = async () => {
+            const url=`https://staging-exskilence-be.azurewebsites.net/api/student/test/submit/${studentId}/${testId}/`
+            try {
+              await axios.get(
+                url
+              );
+              sessionStorage.removeItem("timer");
+            } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the submitting test error:", loggingError);
+            }
+ 
+            console.error("Error fetching submitting test data:", innerError);
+            }
+          };
+
+          submitTest(); // Call the async function
+
+          return 0;
+        }
+
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }
+}, [timeInSeconds, navigate, studentId, testId, testCompleted, location.pathname]);
+
 
   const formatTime = useCallback((seconds: number): string => {
     const hours = Math.floor(seconds / 3600);

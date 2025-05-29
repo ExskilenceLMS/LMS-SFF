@@ -3,7 +3,7 @@ import { Container, Card, Table, Button, Spinner, Badge, Modal } from 'react-boo
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { format, formatDistance } from 'date-fns';
-
+import { secretKey } from "../constants";
 interface DeviceSession {
   id: string;
   device_name: string;
@@ -23,12 +23,17 @@ const DeviceSessions: React.FC = () => {
   const [sessionToRevoke, setSessionToRevoke] = useState<string | null>(null);
   const [revokeAll, setRevokeAll] = useState<boolean>(false);
   const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
+ 
   const fetchSessions = async () => {
+    const url ='https://staging-exskilence-be.azurewebsites.net/api/sessions/'
     try {
       setRefreshing(true);
       const response = await axios.get<{ sessions: DeviceSession[] }>(
-        'https://staging-exskilence-be.azurewebsites.net/api/sessions/',
+        url,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
@@ -48,10 +53,33 @@ const DeviceSessions: React.FC = () => {
       }
       
       setError(null);
-    } catch (err: any) {
+    } catch (innerError: any) {
       setError('Failed to load your active sessions');
-      console.error('Error fetching sessions:', err);
-    } finally {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the login error:", loggingError);
+            }
+ 
+            console.error("Error fetching login data:", innerError);
+            }
+ finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -74,12 +102,14 @@ const DeviceSessions: React.FC = () => {
   };
 
   const confirmRevoke = async () => {
+    const url='https://staging-exskilence-be.azurewebsites.net/api/revoke-all/'
+    const url1='https://staging-exskilence-be.azurewebsites.net/api/revoke/'
     try {
       setLoading(true);
       
       if (revokeAll) {
         await axios.post(
-          'https://staging-exskilence-be.azurewebsites.net/api/revoke-all/',
+          url,
           {},
           {
             headers: {
@@ -94,7 +124,7 @@ const DeviceSessions: React.FC = () => {
         navigate('/');
       } else if (sessionToRevoke) {
         await axios.post(
-          'https://staging-exskilence-be.azurewebsites.net/api/revoke/',
+          url1,
           { session_id: sessionToRevoke },
           {
             headers: {
@@ -112,10 +142,34 @@ const DeviceSessions: React.FC = () => {
           fetchSessions();
         }
       }
-    } catch (err) {
+    } 
+    catch (innerError: any) {
       setError('Failed to revoke session');
-      console.error('Error revoking session:', err);
-    } finally {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the login error:", loggingError);
+            }
+ 
+            console.error("Error fetching login data:", innerError);
+            }
+     finally {
       setShowConfirmModal(false);
       setLoading(false);
     }

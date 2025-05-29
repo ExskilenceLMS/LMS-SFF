@@ -120,7 +120,10 @@ const SubjectRoadMap: React.FC = () => {
     let allSubtopicIdsList: string[] = [];
     const navigate = useNavigate();
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
-
+    const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+    const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+    const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
     const handleToggle = () => {
         setIsActive(prevIsActive => !prevIsActive);
     };
@@ -200,10 +203,12 @@ useEffect(() => {
     }
 
     const fetchRoadmapData = async () => {
+        const url=`https://staging-exskilence-be.azurewebsites.net/api/student/learningmodules/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/`
+        const url1="https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
         try {
             setLoading(true);
             setDisablePreviousBtn(true);
-            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/learningmodules/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/`);
+            const response = await axios.get(url);
             setChapters(response.data);
             var variable=response.data[0].day_completed;
             
@@ -258,7 +263,7 @@ useEffect(() => {
                 }
             }
 
-            const response1 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
+            const response1 = await axios.put(url1, {
                 "student_id": studentId,
                 "subject": subject,
                 "subject_id": subjectId,
@@ -270,12 +275,35 @@ useEffect(() => {
 
             setLoading(false);
             setDisablePreviousBtn(false);
-        } catch (err) {
-            console.error("Error fetching roadmap data:", err);
+        } 
+        catch (innerError: any) {
             setError("Failed to load learning modules. Please try again later.");
             setLoading(false);
             setDisablePreviousBtn(false);
-        }
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the roadmap data error:", loggingError);
+            }
+ 
+            console.error("Error fetching roadmap data:", innerError);
+            }
     };
 
     fetchRoadmapData();
@@ -283,26 +311,51 @@ useEffect(() => {
 
 
     const fetchMCQQuestions = useCallback(async (subTopicIndex: number) => {
+        const url = `https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`
         try {
             setLoading(true);
             setDisablePreviousBtn(true);
-            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`);
+            const response = await axios.get(url);
             setMcqQuestions(response.data);
             setCurrentMCQIndex(0);
             setLoading(false);
             setDisablePreviousBtn(false);
-        } catch (err) {
-            console.error("Error fetching MCQ questions:", err);
+        } 
+        catch (innerError: any) {
             setError("Failed to load MCQ questions. Please try again later.");
             setLoading(false);
-        }
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the MCQ questions error:", loggingError);
+            }
+ 
+            console.error("Error fetching MCQ questions data:", innerError);
+            }
     }, [studentId, subject, dayNumber]);
 
     const fetchCodingQuestions = useCallback(async (subTopicIndex: number) => {
+        const url =`https://staging-exskilence-be.azurewebsites.net/api/student/practicecoding/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`
         try {
             setLoading(true);
             setDisablePreviousBtn(true);
-            const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/student/practicecoding/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/${sessionStorage.getItem('currentSubTopicId')}/`);
+            const response = await axios.get(url);
             const codingQuestionsData = response.data.map((question: any, index: number) => ({
                 id: index + 1,
                 question: question.Qn,
@@ -312,12 +365,35 @@ useEffect(() => {
             setCodingQuestions(codingQuestionsData);
             setLoading(false);
             setDisablePreviousBtn(false);
-        } catch (err) {
-            console.error("Error fetching coding questions:", err);
+        } 
+        catch (innerError: any) {
             setError("Failed to load coding questions. Please try again later.");
             setLoading(false);
             setDisablePreviousBtn(false);
-        }
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the coding questions error:", loggingError);
+            }
+ 
+            console.error("Error fetching coding questions data:", innerError);
+            }
     }, [studentId, subject, dayNumber]);
 
     const toggleSection = useCallback((index: number) => {
@@ -327,22 +403,24 @@ useEffect(() => {
     }, []);
 
     const handleSubTopicChange = useCallback(async (index: number, isUserInitiated: boolean = false) => {
-        setCurrentSubTopicIndex(index);
-        setCurrentLessonIndex(0);
-        setCurrentNotesIndex(0);
-    
-        sessionStorage.setItem("lastSubTopicIndex", index.toString());
-    
-        if (!expandedSections.includes(index)) {
-            setExpandedSections(prev => [...prev, index]);
-        }
-    
-        if (chapters.length > 0 && chapters[0].sub_topic_data.length > index) {
-            const subTopic = chapters[0].sub_topic_data[index];
-    
-            if (!isUserInitiated) {
-                setDisablePreviousBtn(true);
-                const response1 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
+    setCurrentSubTopicIndex(index);
+    setCurrentLessonIndex(0);
+    setCurrentNotesIndex(0);
+
+    sessionStorage.setItem("lastSubTopicIndex", index.toString());
+
+    if (!expandedSections.includes(index)) {
+        setExpandedSections(prev => [...prev, index]);
+    }
+
+    if (chapters.length > 0 && chapters[0].sub_topic_data.length > index) {
+        const subTopic = chapters[0].sub_topic_data[index];
+
+        if (!isUserInitiated) {
+            setDisablePreviousBtn(true);
+            const url="https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
+            try {
+                await axios.put(url, {
                     "student_id": studentId,
                     "subject": subject,
                     "subject_id": subjectId,
@@ -351,19 +429,46 @@ useEffect(() => {
                     "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
                     "status": false
                 });
+            } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the handle subtopic change error:", loggingError);
+            }
+ 
+            console.error("Error fetching handle subtopic change data:", innerError);
+            } finally {
                 setDisablePreviousBtn(false);
             }
-    
-            if (currentView === 'lesson' && subTopic.lesson && subTopic.lesson.length > 0) {
-                setSelectedContent(subTopic.lesson[0]);
-            } else if (currentView === 'notes' && subTopic.notes && subTopic.notes.length > 0) {
-                setSelectedContent(subTopic.notes[0]);
-                setContentType('notes');
-            }
         }
-        setDisablePreviousBtn(false);
-    }, [chapters, currentView, expandedSections]);
-     
+
+        if (currentView === 'lesson' && subTopic.lesson && subTopic.lesson.length > 0) {
+            setSelectedContent(subTopic.lesson[0]);
+        } else if (currentView === 'notes' && subTopic.notes && subTopic.notes.length > 0) {
+            setSelectedContent(subTopic.notes[0]);
+            setContentType('notes');
+        }
+    }
+
+    setDisablePreviousBtn(false);
+}, [chapters, currentView, expandedSections]);
+
     
     const handleViewChange = useCallback((view: 'lesson' | 'mcq' | 'coding'  | 'notes') => {
         setCurrentView(view);
@@ -548,7 +653,7 @@ const isNextButtonDisabled = useCallback(() => {
     }, []);
 
 
-    const handleSubmitAnswer = useCallback((questionId: string, correctAnswer: string) => {
+const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer: string) => {
     const isCorrect = selectedAnswers[questionId] === correctAnswer;
 
     setSubmittedAnswers(prev => ({
@@ -584,23 +689,50 @@ const isNextButtonDisabled = useCallback(() => {
         };
 
         setDisablePreviousBtn(true);
-        axios.post("https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/submit/", submissionData)
-            .then(response => {
-                setMcqQuestions(prevQuestions =>
-                    prevQuestions.map(question =>
-                        question.Qn_name === questionId
-                            ? { ...question, score: response.data.score }
-                            : question
-                    )
-                );
-            })
-            .catch(err => {
-                console.error("Error submitting answer:", err);
-            });
-        setDisablePreviousBtn(false);
-    }
-}, [selectedAnswers, mcqQuestions, studentId, subject, dayNumber]);
+        const url="https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/submit/"
+        try {
+            const response = await axios.post(
+                url,
+                submissionData
+            );
 
+            setMcqQuestions(prevQuestions =>
+                prevQuestions.map(question =>
+                    question.Qn_name === questionId
+                        ? { ...question, score: response.data.score }
+                        : question
+                )
+            );
+        }catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the submitting answer error:", loggingError);
+            }
+ 
+            console.error("Error fetching submitting answer data:", innerError);
+            } finally {
+            setDisablePreviousBtn(false);
+        }
+    }
+}, [selectedAnswers, mcqQuestions, studentId, subject, subjectId, weekNumber, dayNumber]);
+ 
 
     const [pdfUrl, setPdfUrl] = useState('');
     const [pdfError, setPdfError] = useState(false);
@@ -610,6 +742,7 @@ const isNextButtonDisabled = useCallback(() => {
     const [videoLoading, setVideoLoading] = useState(false);
 
     useEffect(() => {
+    const fetchMedia = async () => {
         const notesUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.notes?.[currentNotesIndex];
         const lessonVideoUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.lesson?.[currentLessonIndex] || '';
 
@@ -617,58 +750,111 @@ const isNextButtonDisabled = useCallback(() => {
             setPdfLoading(true);
             setPdfError(false);
             setLoading(true);
-
-            fetch('https://staging-exskilence-be.azurewebsites.net/media/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ file_url: notesUrl })
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return response.blob();
-                })
-                .then(blob => {
-                    const processedUrl = URL.createObjectURL(blob);
-                    setPdfUrl(processedUrl);
-                    setPdfLoading(false);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.error("Error fetching PDF:", err);
-                    setPdfError(true);
-                    setPdfLoading(false);
-                    setLoading(false);
+            const url='https://staging-exskilence-be.azurewebsites.net/media/';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_url: notesUrl })
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const processedUrl = URL.createObjectURL(blob);
+                setPdfUrl(processedUrl);
+            } 
+            catch (innerError: any) {
+                setPdfError(true);
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the pdf error:", loggingError);
+            }
+ 
+            console.error("Error fetching pdf data:", innerError);
+            }
+             finally {
+                setPdfLoading(false);
+                setLoading(false);
+            }
         }
 
         if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
             setVideoLoading(true);
             setVideoError(false);
             setLoading(true);
-
-            fetch('https://staging-exskilence-be.azurewebsites.net/media/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ file_url: lessonVideoUrl })
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return response.blob();
-                })
-                .then(blob => {
-                    const processedUrl = URL.createObjectURL(blob);
-                    setVideoUrl(processedUrl);
-                    setVideoLoading(false);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.error("Error fetching video:", err);
-                    setVideoError(true);
-                    setVideoLoading(false);
-                    setLoading(false);
+            setVideoUrl('');
+            const url='https://staging-exskilence-be.azurewebsites.net/media/'
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_url: lessonVideoUrl })
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const processedUrl = URL.createObjectURL(blob);
+                setVideoUrl(processedUrl);
+            } 
+            catch (innerError: any) {
+                setVideoError(true);
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the login error:", loggingError);
+            }
+ 
+            console.error("Error fetching login data:", innerError);
+            }
+             finally {
+                setVideoLoading(false);
+                setLoading(false);
+            }
         }
-    }, [chapters, currentSubTopicIndex, currentNotesIndex, currentLessonIndex]);
+    };
+
+    fetchMedia();
+}, [chapters, currentSubTopicIndex, currentNotesIndex, currentLessonIndex]);
+ 
 
     const renderLessonContent = () => {
         if (loading) {
@@ -1018,53 +1204,72 @@ const handleNext = useCallback(async () => {
             } else {
                 const isLastContent = currentLessonIndex === currentChapter.sub_topic_data[currentSubTopicIndex].lesson.length - 1;
                 if (isLastContent) {
-                    const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
-                        "student_id": studentId,
-                        "subject": subject,
-                        "subject_id": subjectId,
-                        "day_number": dayNumber,
-                        "week_number": weekNumber,
-                        "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
-                        "status": true
-                    });
-                    if (response3.data.message === 'Already Completed' || response3.data.message === "Updated" ) {
-                        
-                        const nextSubTopicIndex = currentSubTopicIndex + 1;
-                        if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
-                            const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
-                            setUnlockedSubtopics(prev => {
-                                const newSet = new Set(prev);
-                                newSet.add(nextSubTopic.subtopicid);
-                                sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
-                                return newSet;
-                            });
-                            sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
-                            sessionStorage.setItem("lastContentType", 'lesson');
-                            handleSubTopicChange(nextSubTopicIndex, false);
-                            setCurrentView('lesson');
-                            setCurrentLessonIndex(0);
-                            setDisablePreviousBtn(false);
+                    const url="https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
+                    try {
+                        const response3 = await axios.put(url, {
+                            "student_id": studentId,
+                            "subject": subject,
+                            "subject_id": subjectId,
+                            "day_number": dayNumber,
+                            "week_number": weekNumber,
+                            "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
+                            "status": true
+                        });
+                        if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
+                            const nextSubTopicIndex = currentSubTopicIndex + 1;
+                            if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
+                                const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
+                                setUnlockedSubtopics(prev => {
+                                    const newSet = new Set(prev);
+                                    newSet.add(nextSubTopic.subtopicid);
+                                    sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
+                                    return newSet;
+                                });
+                                sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
+                                sessionStorage.setItem("lastContentType", 'lesson');
+                                handleSubTopicChange(nextSubTopicIndex, false);
+                                setCurrentView('lesson');
+                                setCurrentLessonIndex(0);
+                                setDisablePreviousBtn(false);
+                                setDisableNextBtn(false);
+                            }
+                        } else if (response3.data.message === "Day Completed") {
+                            navigate("/SubjectOverview");
+                            console.log(allSubtopicIdsList);
+                        } else {
+                            setShowUpdateModal(true);
+                            setModalMessage("Please complete the current lesson before moving to the next one");
                             setDisableNextBtn(false);
                         }
-                    } 
-                    else if( response3.data.message === "Day Completed")
-                        {
-                            navigate("/SubjectOverview");
-                            console.log(allSubtopicIdsList)
-                        }
-                    else {
-                        setShowUpdateModal(true);
-                        setModalMessage("Please complete the current lesson before moving to the next one");
-                        setDisableNextBtn(false);
-                    }
+                    } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging update status error:", loggingError);
+            }
+ 
+            console.error("Error fetching update status data:", innerError);
+            }
                 }
             }
         }
     } else if (currentView === 'notes') {
-        console.log(currentChapter)
-        console.log(currentSubTopicIndex)
-        console.log(currentChapter.sub_topic_data[currentSubTopicIndex])
-        console.log('159', currentChapter.sub_topic_data[currentSubTopicIndex].mcqQuestions)
         if (currentNotesIndex < currentChapter.sub_topic_data[currentSubTopicIndex].notes.length - 1) {
             handleNextNotes();
         } else {
@@ -1076,45 +1281,68 @@ const handleNext = useCallback(async () => {
             } else {
                 const isLastContent = currentNotesIndex === currentChapter.sub_topic_data[currentSubTopicIndex].notes.length - 1;
                 if (isLastContent) {
-                    const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
-                        "student_id": studentId,
-                        "subject": subject,
-                        "subject_id": subjectId,
-                        "day_number": dayNumber,
-                        "week_number": weekNumber,
-                        "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
-                        "status": true
-                    });
-                    if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
-                        
-                        const nextSubTopicIndex = currentSubTopicIndex + 1;
-                        if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
-                            const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
-                            setUnlockedSubtopics(prev => {
-                                const newSet = new Set(prev);
-                                newSet.add(nextSubTopic.subtopicid);
-                                sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
-                                return newSet;
-                            });
-                            sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
-                            sessionStorage.setItem("lastContentType", 'lesson');
-                            handleSubTopicChange(nextSubTopicIndex, false);
-                            setCurrentView('lesson');
-                            setCurrentLessonIndex(0);
-                            setDisablePreviousBtn(false);
+                    const url="https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
+                    try {
+                        const response3 = await axios.put(url, {
+                            "student_id": studentId,
+                            "subject": subject,
+                            "subject_id": subjectId,
+                            "day_number": dayNumber,
+                            "week_number": weekNumber,
+                            "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
+                            "status": true
+                        });
+                        if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
+                            const nextSubTopicIndex = currentSubTopicIndex + 1;
+                            if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
+                                const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
+                                setUnlockedSubtopics(prev => {
+                                    const newSet = new Set(prev);
+                                    newSet.add(nextSubTopic.subtopicid);
+                                    sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
+                                    return newSet;
+                                });
+                                sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
+                                sessionStorage.setItem("lastContentType", 'lesson');
+                                handleSubTopicChange(nextSubTopicIndex, false);
+                                setCurrentView('lesson');
+                                setCurrentLessonIndex(0);
+                                setDisablePreviousBtn(false);
+                                setDisableNextBtn(false);
+                            }
+                        } else if (response3.data.message === "Day Completed") {
+                            navigate("/SubjectOverview");
+                            console.log(allSubtopicIdsList);
+                        } else {
+                            setShowUpdateModal(true);
+                            setModalMessage("Please complete the current lesson before moving to the next one");
                             setDisableNextBtn(false);
                         }
-                    } 
-                    else if( response3.data.message === "Day Completed")
-                        {
-                            navigate("/SubjectOverview");
-                            console.log(allSubtopicIdsList)
-                        }
-                    else {
-                        setShowUpdateModal(true);
-                        setModalMessage("Please complete the current lesson before moving to the next one");
-                        setDisableNextBtn(false);
-                    }
+                    } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the update status error:", loggingError);
+            }
+ 
+            console.error("Error fetching update status data:", innerError);
+            }
                 }
             }
         }
@@ -1141,47 +1369,68 @@ const handleNext = useCallback(async () => {
                         });
                         const isLastContent = contentOrder[contentOrder.length - 1] === 'mcqQuestions';
                         if (isLastContent) {
-                            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
-                                "student_id": studentId,
-                                "subject": subject,
-                                "subject_id": subjectId,
-                                "day_number": dayNumber,
-                                "week_number": weekNumber,
-                                "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
-                                "status": true
-                            });
-                            if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
-                                console.log("456")
-                        
-                                const nextSubTopicIndex = currentSubTopicIndex + 1;
-                                if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
-                                    const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
-                                    setUnlockedSubtopics(prev => {
-                                        const newSet = new Set(prev);
-                                        newSet.add(nextSubTopic.subtopicid);
-                                        sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
-                                        return newSet;
-                                    });
-                                    sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
-                                    sessionStorage.setItem("lastContentType", 'lesson');
-                                    handleSubTopicChange(nextSubTopicIndex, false);
-                                    setCurrentView('lesson');
-                                    setCurrentLessonIndex(0);
-                                    setDisablePreviousBtn(false);
+                            const url="https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
+                            try {
+                                const response3 = await axios.put(url, {
+                                    "student_id": studentId,
+                                    "subject": subject,
+                                    "subject_id": subjectId,
+                                    "day_number": dayNumber,
+                                    "week_number": weekNumber,
+                                    "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
+                                    "status": true
+                                });
+                                if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
+                                    const nextSubTopicIndex = currentSubTopicIndex + 1;
+                                    if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
+                                        const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
+                                        setUnlockedSubtopics(prev => {
+                                            const newSet = new Set(prev);
+                                            newSet.add(nextSubTopic.subtopicid);
+                                            sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
+                                            return newSet;
+                                        });
+                                        sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
+                                        sessionStorage.setItem("lastContentType", 'lesson');
+                                        handleSubTopicChange(nextSubTopicIndex, false);
+                                        setCurrentView('lesson');
+                                        setCurrentLessonIndex(0);
+                                        setDisablePreviousBtn(false);
+                                        setDisableNextBtn(false);
+                                    }
+                                } else if (response3.data.message === "Day Completed") {
+                                    navigate("/SubjectOverview");
+                                    console.log(allSubtopicIdsList);
+                                } else {
+                                    setShowUpdateModal(true);
+                                    setModalMessage("Please complete the current lesson before moving to the next one");
                                     setDisableNextBtn(false);
                                 }
-                            }
-                            else if( response3.data.message === "Day Completed")
-                        {
-                            console.log("123");
-                            navigate("/SubjectOverview");
-                            console.log(allSubtopicIdsList)
-                        }
-                         else {
-                                setShowUpdateModal(true);
-                                setModalMessage("Please complete the current lesson before moving to the next one");
-                                setDisableNextBtn(false);
-                            }
+                            } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the update status error:", loggingError);
+            }
+ 
+            console.error("Error fetching update status data:", innerError);
+            }
                         }
                     }
                 }
@@ -1203,75 +1452,121 @@ const handleNext = useCallback(async () => {
         });
         const isLastContent = contentOrder[contentOrder.length - 1] === 'codingQuestions';
         if (isLastContent) {
-            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
-                "student_id": studentId,
-                "subject": subject,
-                "subject_id": subjectId,
-                "day_number": dayNumber,
-                "week_number": weekNumber,
-                "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
-                "status": true
-            });
-            if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
-
-                const nextSubTopicIndex = currentSubTopicIndex + 1;
-                if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
-                    const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
-                    setUnlockedSubtopics(prev => {
-                        const newSet = new Set(prev);
-                        newSet.add(nextSubTopic.subtopicid);
-                        sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
-                        return newSet;
-                    });
-                    sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
-                    sessionStorage.setItem("lastContentType", 'lesson');
-                    handleSubTopicChange(nextSubTopicIndex, false);
-                    setCurrentView('lesson');
-                    setCurrentLessonIndex(0);
-                    setDisablePreviousBtn(false);
+            const url="https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
+            try {
+                const response3 = await axios.put(url, {
+                    "student_id": studentId,
+                    "subject": subject,
+                    "subject_id": subjectId,
+                    "day_number": dayNumber,
+                    "week_number": weekNumber,
+                    "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
+                    "status": true
+                });
+                if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
+                    const nextSubTopicIndex = currentSubTopicIndex + 1;
+                    if (nextSubTopicIndex < currentChapter.sub_topic_data.length) {
+                        const nextSubTopic = currentChapter.sub_topic_data[nextSubTopicIndex];
+                        setUnlockedSubtopics(prev => {
+                            const newSet = new Set(prev);
+                            newSet.add(nextSubTopic.subtopicid);
+                            sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newSet)));
+                            return newSet;
+                        });
+                        sessionStorage.setItem("currentSubTopicId", nextSubTopic.subtopicid);
+                        sessionStorage.setItem("lastContentType", 'lesson');
+                        handleSubTopicChange(nextSubTopicIndex, false);
+                        setCurrentView('lesson');
+                        setCurrentLessonIndex(0);
+                        setDisablePreviousBtn(false);
+                        setDisableNextBtn(false);
+                    }
+                } else if (response3.data.message === "Day Completed") {
+                    navigate("/SubjectOverview");
+                    console.log(allSubtopicIdsList);
+                } else {
+                    setShowUpdateModal(true);
+                    setModalMessage("Please complete the current lesson before moving to the next one");
                     setDisableNextBtn(false);
                 }
-            } 
-            else  if( response3.data.message === "Day Completed")
-                        {
-                            navigate("/SubjectOverview");
-                            console.log(allSubtopicIdsList)
-                        }
-                        else {
-                setShowUpdateModal(true);
-                setModalMessage("Please complete the current lesson before moving to the next one");
-                setDisableNextBtn(false);
+            }catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the update status error:", loggingError);
+            }
+ 
+            console.error("Error fetching update status data:", innerError);
             }
         } else {
             setDisableNextBtn(true);
             setDisablePreviousBtn(true);
-            const response3 = await axios.put("https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/", {
-                "student_id": studentId,
-                "subject": subject,
-                "subject_id": subjectId,
-                "day_number": dayNumber,
-                "week_number": weekNumber,
-                "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
-                "status": true
-            });
-            if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
-                
-                setDisablePreviousBtn(false);
+            const url = "https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
+            try {
+                const response3 = await axios.put(url, {
+                    "student_id": studentId,
+                    "subject": subject,
+                    "subject_id": subjectId,
+                    "day_number": dayNumber,
+                    "week_number": weekNumber,
+                    "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
+                    "status": true
+                });
+                if (response3.data.message === 'Already Completed' || response3.data.message === "Updated") {
+                    setDisablePreviousBtn(false);
+                } else if (response3.data.message === "Day Completed") {
+                    navigate("/SubjectOverview");
+                    console.log(allSubtopicIdsList);
+                } else {
+                    setShowUpdateModal(true);
+                    setModalMessage("Please complete the next one.");
+                    setDisableNextBtn(false);
+                }
+            } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the update status error:", loggingError);
             }
-            else if( response3.data.message === "Day Completed")
-                        {
-                            navigate("/SubjectOverview");
-                            console.log(allSubtopicIdsList)
-                        }
-            else {
-                setShowUpdateModal(true);
-                setModalMessage("Please complete the next one.");
-                setDisableNextBtn(false);
+ 
+            console.error("Error fetching update status data:", innerError);
             }
         }
     }
 }, [currentView, currentLessonIndex, currentNotesIndex, currentMCQIndex, chapters, currentSubTopicIndex, studentId, subject, subjectId, dayNumber, weekNumber]);
-
+ 
 
 const handlePrevious = useCallback(() => {
     console.log('handleprevious')

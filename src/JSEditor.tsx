@@ -61,13 +61,18 @@ const JSEditor: React.FC = () => {
 const encryptedStudentId = sessionStorage.getItem('StudentId');
   const decryptedStudentId = CryptoJS.AES.decrypt(encryptedStudentId!, secretKey).toString(CryptoJS.enc.Utf8);
   const studentId = decryptedStudentId;
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
+ 
 
   useEffect(() => {
     const fetchQuestion = async () => {
+      const url="https://exskilence-internships-backend.azurewebsites.net/frontend/qns/data/"
       try {
         const response = await axios.post(
-          "https://exskilence-internships-backend.azurewebsites.net/frontend/qns/data/",
+          url,
           {
             StudentId: "24TEST0108",
             Course: "Java_Script",
@@ -78,9 +83,33 @@ const encryptedStudentId = sessionStorage.getItem('StudentId');
         setJsEdit(response.data.Question.UserAns || '');
         setHtmlEdit(response.data.Question.html_file || '');
         setCssEdit(response.data.Question.css_file || '');
-      } catch (error) {
-        console.error("Error fetching the question:", error);
-      } finally {
+      } 
+      catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the JS Editor error:", loggingError);
+            }
+ 
+            console.error("Error fetching JS Editor question data:", innerError);
+            }
+ finally {
         setLoading(false);
       }
     };
@@ -358,7 +387,7 @@ const encryptedStudentId = sessionStorage.getItem('StudentId');
 
 
 const handleSubmit = async () => {
-    
+    const url="https://staging-exskilence-be.azurewebsites.net/api/student/coding/"
   try {
     const postData = {
       student_id: studentId,
@@ -374,7 +403,7 @@ const handleSubmit = async () => {
     };
 
     const response = await axios.put(
-      "https://staging-exskilence-be.azurewebsites.net/api/student/coding/",
+      url,
       postData
     );
 
@@ -382,9 +411,31 @@ const handleSubmit = async () => {
     setIsJSSubmitted(true);
 
 
-  } catch (error) {
-    console.error("Error executing the code:", error);
-  } finally {
+  } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the JS Editor error:", loggingError);
+            }
+ 
+            console.error("Error fetching JS Editor data:", innerError);
+            } finally {
     setProcessing(false);
   }
 };

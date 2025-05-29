@@ -55,24 +55,51 @@ const Test: React.FC = () => {
   const encryptedStudentId = sessionStorage.getItem('StudentId');
   const decryptedStudentId = CryptoJS.AES.decrypt(encryptedStudentId!, secretKey).toString(CryptoJS.enc.Utf8);
   const studentId = decryptedStudentId;
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
   useEffect(() => {
     sessionStorage.removeItem('TestId');
   }, []);
 
   useEffect(() => {
     const fetchTestDetails = async () => {
+      const url=`https://staging-exskilence-be.azurewebsites.net/api/student/testdetails/${studentId}/`
       try {
         const response = await axios.get(
-          `https://staging-exskilence-be.azurewebsites.net/api/student/testdetails/${studentId}/`
+          url
         );
         setTestDetails(response.data.test_details);
         setFilteredDetails(response.data.test_details);
         setLoading(false);
-      } catch (error) {
-        console.error(error);
+      } 
+      catch (innerError: any) {
         setLoading(false);
-      }
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the test error:", loggingError);
+            }
+ 
+            console.error("Error fetching test data:", innerError);
+            }
     };
     fetchTestDetails();
   }, []);

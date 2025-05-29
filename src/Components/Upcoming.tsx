@@ -31,34 +31,87 @@ const Upcoming: React.FC = () => {
   const encryptedBatchId = sessionStorage.getItem('BatchId');
   const decryptedBatchId = CryptoJS.AES.decrypt(encryptedBatchId!, secretKey).toString(CryptoJS.enc.Utf8);
   const batchId = decryptedBatchId;
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+
+
   useEffect(() => {
     const fetchDiscussions = async () => {
+      const url=`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/upcomming/sessions/${studentId}/`
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/upcomming/sessions/${studentId}/`);
+        const response = await axios.get(url);
         setDiscussions(response.data.map((item: any) => ({
           title: item.title,
           week: item.title,
           date: item.date,
           time: item.time,
         })));
-      } catch (error) {
-        console.error("Error fetching discussions:", error);
-      } finally {
+      } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the Upcoming error:", loggingError);
+            }
+ 
+            console.error("Error fetching upcoming data:", innerError);
+            }
+            finally {
         setLoadingDiscussions(false);
       }
     };
 
     const fetchEvents = async () => {
+        const url=`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/upcomming/events/${courseId}/${batchId}/`
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/upcomming/events/${courseId}/${batchId}/`);
+        const response = await axios.get(url);
         setEvents(response.data.map((event: any) => ({
           title: event.title,
           date: event.date,
           time: event.time,
         })));
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      } finally {
+      } 
+catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the events error:", loggingError);
+            }
+ 
+            console.error("Error fetching events data:", innerError);
+            }finally {
         setLoadingEvents(false);
       }
     };

@@ -16,11 +16,15 @@ const Calendar: React.FC = () => {
   const encryptedStudentId = sessionStorage.getItem('StudentId');
   const decryptedStudentId = CryptoJS.AES.decrypt(encryptedStudentId!, secretKey).toString(CryptoJS.enc.Utf8);
   const studentId = decryptedStudentId;
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+  
   useEffect(() => {
     const fetchData = async () => {
+      const url=`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/event/calender/${studentId}/`
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/event/calender/${studentId}/`);
+        const response = await axios.get(url);
         setData(response.data);
         setYear(parseInt(response.data.year));
         setMonth(parseInt(response.data.month)); 
@@ -35,9 +39,34 @@ const Calendar: React.FC = () => {
         });
 
         setSpecialDates(transformedSpecialDates);
-      } catch (error) {
-        console.error(error);
-      }
+      }  
+      catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName
+                
+                ,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the Calendar error:", loggingError);
+            }
+ 
+            console.error("Error fetching Calendar data:", innerError);
+            }
     };
     fetchData();
   }, [studentId]);

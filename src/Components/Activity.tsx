@@ -53,20 +53,50 @@ const Activity: React.FC = () => {
   const encryptedStudentId = sessionStorage.getItem('StudentId');
   const decryptedStudentId = CryptoJS.AES.decrypt(encryptedStudentId!, secretKey).toString(CryptoJS.enc.Utf8);
   const studentId = decryptedStudentId;
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+  console.log('try',actualEmail,actualName,actualStudentId)
 
   useEffect(() => {
     const fetchData = async () => {
+      const url=`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/hourspent/${studentId}/n/`
       try {
-        const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/hourspent/${studentId}/n/`);
+        const response = await axios.get(url);
         setData(response.data.hours);
         setWeeklyLimit(response.data.weekly_limit);
         setMinThreshold(response.data.daily_limit);
         setSelectedWeek(response.data.weekly_limit);
         const maxHourValue = Math.max(...response.data.hours.map((hour: { hours: number }) => hour.hours));
         setMaxHours(maxHourValue);
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
-      }
+      } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName
+                
+                ,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the Activity error:", loggingError);
+            }
+ 
+             console.error("Error fetching initial data:", innerError);
+          
+            }
     };
 
     fetchData();
@@ -79,15 +109,40 @@ const Activity: React.FC = () => {
   }, [selectedWeek]);
 
   const fetchHoursSpentForWeek = async (weekNumber: number) => {
+    const url=`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/hourspent/${studentId}/${weekNumber}/`
     try {
-      const response = await axios.get(`https://staging-exskilence-be.azurewebsites.net/api/studentdashboard/hourspent/${studentId}/${weekNumber}/`);
+      const response = await axios.get(url);
       setData(response.data.hours);
       setMinThreshold(response.data.daily_limit);
       const maxHourValue = Math.max(...response.data.hours.map((hour: { hours: number }) => hour.hours));
       setMaxHours(maxHourValue);
-    } catch (error) {
-      console.error("Error fetching data for week", weekNumber, ":", error);
-    }
+    } catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName
+                
+                ,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the Activity error:", loggingError);
+            }
+ 
+           console.error("Error fetching data for week", weekNumber, ":", innerError);
+            }
   };
 
   const total = data ? (data.reduce((acc, curr) => acc + curr.hours, 0)).toFixed(1) : 0;

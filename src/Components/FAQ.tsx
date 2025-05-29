@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { secretKey } from "../constants";
 interface FAQData {
   FAQ: {
     [category: string]: { question: string; answer: string }[];
@@ -7,11 +9,16 @@ interface FAQData {
 
 const FAQ: React.FC = () => {
   const [data, setData] = useState<FAQData | null>(null);
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(
-        "https://staging-exskilence-be.azurewebsites.net/api/student/faq/"
+      const url= "https://staging-exskilence-be.azurewebsites.net/api/student/faq/"
+      try{
+        const response = await fetch(
+       url
       );
       const blob = await response.blob();
       const reader = new FileReader();
@@ -26,6 +33,33 @@ const FAQ: React.FC = () => {
       };
 
       reader.readAsText(blob);
+      }
+      catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the FAQ:", loggingError);
+            }
+ 
+            console.error("Error fetching FAQ data:", innerError);
+            }
+
     };
 
     fetchData();

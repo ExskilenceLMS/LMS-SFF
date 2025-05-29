@@ -26,6 +26,10 @@ const Header: React.FC = () => {
   const encryptedDayNumber = sessionStorage.getItem('DayNumber') || "";
   const decryptedDayNumber = useMemo(() => CryptoJS.AES.decrypt(encryptedDayNumber!, secretKey).toString(CryptoJS.enc.Utf8), [encryptedDayNumber]);
   const dayNumber = decryptedDayNumber;
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+
 
   const formattedTitle = useMemo(() => pathSegments
     .map((segment) =>
@@ -40,11 +44,40 @@ const Header: React.FC = () => {
     setShowUserMenu(false);
   }, [navigate]);
 
-  const handleLogout = useCallback(() => {
-    axios.get(`https://staging-exskilence-be.azurewebsites.net/api/logout/${studentId}/`)
+  const handleLogout = useCallback(async () => {
+    const url=`https://staging-exskilence-be.azurewebsites.net/api/logout/${studentId}/`
+    try{
+      axios.get(url)
     sessionStorage.clear();
     navigate('/');
     setShowUserMenu(false);
+    }
+    catch (innerError: any) {
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the logout error:", loggingError);
+            }
+ 
+            console.error("Error fetching logout data:", innerError);
+            }
+
   }, [navigate]);
 
   const handleMouseEnter = useCallback(() => {

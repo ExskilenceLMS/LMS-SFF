@@ -17,7 +17,10 @@ const RaiseTicket: React.FC<RaiseTicketProps> = ({ show, onHide, studentId: prop
   const [issueType, setIssueType] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
+ 
   const getStudentId = () => {
     if (propStudentId) {
       return propStudentId;
@@ -72,7 +75,7 @@ const RaiseTicket: React.FC<RaiseTicketProps> = ({ show, onHide, studentId: prop
     event.preventDefault();
     setLoading(true);
     setError(null);
-
+    const url ='https://staging-exskilence-be.azurewebsites.net/api/student/tickets/'
     try {
       const studentId = getStudentId();
       
@@ -86,7 +89,7 @@ const RaiseTicket: React.FC<RaiseTicketProps> = ({ show, onHide, studentId: prop
       };
 
       const response = await axios.post(
-        'https://staging-exskilence-be.azurewebsites.net/api/student/tickets/',
+        url,
         payload
       );
       
@@ -94,10 +97,33 @@ const RaiseTicket: React.FC<RaiseTicketProps> = ({ show, onHide, studentId: prop
       setIssueType("");
       setScreenshot(null);
       onHide();
-    } catch (error) {
-      console.error("Error submitting ticket:", error);
-      setError("Failed to submit ticket. Please try again.");
-    } finally {
+    } catch (innerError: any) {
+            setError("Failed to submit ticket. Please try again.");
+            const errorData = innerError.response?.data || {
+                message: innerError.message,
+                stack: innerError.stack
+            };
+ 
+            const body = {
+                student_id: actualStudentId,
+                Email: actualEmail,
+                Name: actualName,
+                URL_and_Body: `${url}\n + ""`,
+                error: errorData.error,
+            };
+ 
+            try {
+                await axios.post(
+                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                body
+                );
+            } catch (loggingError) {
+                console.error("Error logging the login error:", loggingError);
+            }
+ 
+            console.error("Error fetching login data:", innerError);
+            }
+            finally {
       setLoading(false);
     }
   };

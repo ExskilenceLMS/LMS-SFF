@@ -21,6 +21,9 @@ function App() {
   const encryptedStudentId = sessionStorage.getItem('StudentId') || "";
   const decryptedStudentId = CryptoJS.AES.decrypt(encryptedStudentId!, secretKey).toString(CryptoJS.enc.Utf8);
   const studentId = decryptedStudentId;
+  // const actualStudentId= CryptoJS.AES.decrypt(sessionStorage.getItem('StudentId')!, secretKey).toString(CryptoJS.enc.Utf8);
+  // const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
+  // const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
 
   const resetTimer = useCallback(() => {
     if (timerRef.current) {
@@ -60,10 +63,16 @@ function App() {
     }, 1000);
   }, []);
 
-  const handleLogout = useCallback(() => {
-    axios.get(`https://staging-exskilence-be.azurewebsites.net/api/logout/${studentId}/`);
+  const handleLogout = useCallback(async () => {
+    const url=`https://staging-exskilence-be.azurewebsites.net/api/logout/${studentId}/`
+    try{
+      axios.get(url);
     sessionStorage.clear();
     window.location.href = '/'; 
+    }
+    catch (error){
+      console.error("Login error")
+    }
   }, [studentId]);
 
   useEffect(() => {
