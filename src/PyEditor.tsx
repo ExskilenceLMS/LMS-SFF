@@ -526,7 +526,7 @@ const handleSubmit = async () => {
       subject: subject,
       subject_id: subjectId,
       Qn: questions[currentQuestionIndex].Qn_name,
-      Code: Ans,
+      Ans: Ans,
       CallFunction: "",
       Result: runResponseTestCases,
       // TestCases: runResponseTestCases,
@@ -720,7 +720,19 @@ const handleSubmit = async () => {
                           ref={outputRef}
                           tabIndex={0}
                           onKeyDown={handleKeyPress}
-                          style={{ outline: 'none' }}
+                          // width: 100%; color: black; border: 1px solid white; box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 4px; padding: 10px; white-space: pre-wrap; overflow-wrap: break-word; background-color: rgb(255, 255, 255); min-height: 1em;
+                          style={{ 
+                            outline: 'none',
+                            width: '100%',
+                            color: 'black',
+                            border: '1px solid white',
+                            boxShadow: 'rgba(0, 0, 0, 0.25) 0px 4px 4px',
+                            padding: '10px',
+                            whiteSpace: 'pre-wrap',
+                            overflowWrap: 'break-word',
+                            backgroundColor: 'rgb(255, 255, 255)',
+                            minHeight: '1em',
+                           }}
                         >
                           {output}
                         </pre>
