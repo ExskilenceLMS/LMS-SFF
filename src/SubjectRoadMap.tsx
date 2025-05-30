@@ -757,12 +757,12 @@ const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer:
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ file_url: notesUrl })
                 });
-                console.log('response', response)
-                console.log('responseBody', response.body)
-                console.log('responseURL', response.body)
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 const blob = await response.blob();
-                console.log('blob', blob)
                 const processedUrl = URL.createObjectURL(blob);
                 setPdfUrl(processedUrl);
             } 
