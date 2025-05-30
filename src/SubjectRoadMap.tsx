@@ -1689,9 +1689,9 @@ const handlePrevious = useCallback(() => {
                                                 cursor: unlockedSubtopics.has(subTopic.subtopicid) ? 'pointer' : 'not-allowed',
                                                 opacity: unlockedSubtopics.has(subTopic.subtopicid) ? 1 : 0.5
                                             }}
-                                            onClick={() => {
+                                            onClick={(event) => {
                                                 if (unlockedSubtopics.has(subTopic.subtopicid)) {
-                                                    handleSubTopicContentClick(index, 'lesson');
+                                                    handleSubTopicContentClick(event,index, 'lesson');
                                                 }
                                             }}
                                         >
@@ -1707,9 +1707,9 @@ const handlePrevious = useCallback(() => {
                                                 cursor: unlockedSubtopics.has(subTopic.subtopicid) ? 'pointer' : 'not-allowed',
                                                 opacity: unlockedSubtopics.has(subTopic.subtopicid) ? 1 : 0.5
                                             }}
-                                            onClick={() => {
+                                            onClick={(event) => {
                                                 if (unlockedSubtopics.has(subTopic.subtopicid)) {
-                                                    handleSubTopicContentClick(index, 'notes');
+                                                    handleSubTopicContentClick(event,index, 'notes');
                                                 }
                                             }}
                                         >
@@ -1725,9 +1725,9 @@ const handlePrevious = useCallback(() => {
                                                 cursor: unlockedSubtopics.has(subTopic.subtopicid) ? 'pointer' : 'not-allowed',
                                                 opacity: unlockedSubtopics.has(subTopic.subtopicid) ? 1 : 0.5
                                             }}
-                                            onClick={() => {
+                                            onClick={(event) => {
                                                 if (unlockedSubtopics.has(subTopic.subtopicid)) {
-                                                    handleSubTopicContentClick(index, 'mcq');
+                                                    handleSubTopicContentClick(event,index, 'mcq');
                                                 }
                                             }}
                                         >
@@ -1744,9 +1744,9 @@ const handlePrevious = useCallback(() => {
                                                 cursor: unlockedSubtopics.has(subTopic.subtopicid) ? 'pointer' : 'not-allowed',
                                                 opacity: unlockedSubtopics.has(subTopic.subtopicid) ? 1 : 0.5
                                             }}
-                                            onClick={() => {
+                                            onClick={(event) => {
                                                 if (unlockedSubtopics.has(subTopic.subtopicid)) {
-                                                    handleSubTopicContentClick(index, 'coding');
+                                                    handleSubTopicContentClick(event,index, 'coding');
                                                 }
                                             }}
                                         >
@@ -1774,42 +1774,88 @@ const handlePrevious = useCallback(() => {
             </div>
         );
     };
-    const handleSubTopicContentClick = useCallback(async (index: number, contentType: 'lesson' | 'notes' | 'mcq' | 'coding') => {
-        const subTopic = chapters[0].sub_topic_data[index];
+
     
-        sessionStorage.setItem("currentSubTopicId", subTopic.subtopicid);
+    // const handleSubTopicContentClick = useCallback(async (event: React.MouseEvent,index: number, contentType: 'lesson' | 'notes' | 'mcq' | 'coding') => {
+    //     event.stopPropagation();
+    //     const subTopic = chapters[0].sub_topic_data[index];
     
-        setCurrentSubTopicIndex(index);
-        setCurrentContentType(contentType);
+    //     sessionStorage.setItem("currentSubTopicId", subTopic.subtopicid);
     
-        if (contentType === 'lesson' && subTopic.lesson && subTopic.lesson.length > 0) {
-            setSelectedContent(subTopic.lesson[0]);
-            setCurrentLessonIndex(0);
-        } else if (contentType === 'notes' && subTopic.notes && subTopic.notes.length > 0) {
-            setSelectedContent(subTopic.notes[0]);
-            setContentType('notes');
-            setCurrentNotesIndex(0);
-        } else if (contentType === 'mcq') {
+    //     setCurrentSubTopicIndex(index);
+    //     setCurrentContentType(contentType);
+    
+    //     if (contentType === 'lesson' && subTopic.lesson && subTopic.lesson.length > 0) {
+    //         setSelectedContent(subTopic.lesson[0]);
+    //         setCurrentLessonIndex(0);
+    //     } else if (contentType === 'notes' && subTopic.notes && subTopic.notes.length > 0) {
+    //         setSelectedContent(subTopic.notes[0]);
+    //         setContentType('notes');
+    //         setCurrentNotesIndex(0);
+    //     } else if (contentType === 'mcq') {
+    //         await fetchMCQQuestions(index);
+    //         setCurrentMCQIndex(0);
+    //     } else if (contentType === 'coding') {
+    //         await fetchCodingQuestions(index);
+    //     }
+    
+    //     handleViewChange(contentType);
+    // }, [chapters, fetchMCQQuestions, fetchCodingQuestions]);
+    
+    // useEffect(() => {
+    //     if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
+    //         fetchMCQQuestions(0);
+    //         setHasFetched(true);
+    //       }
+
+    //       if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
+    //         fetchCodingQuestions(0);
+    //         setHasFetched(true);
+    //       }
+    // }, [fetchMCQQuestions, fetchCodingQuestions, studentId, subject, dayNumber]);
+
+    const handleSubTopicContentClick = useCallback(async (event: React.MouseEvent, index: number, contentType: 'lesson' | 'notes' | 'mcq' | 'coding') => {
+    event.stopPropagation();
+
+    const subTopic = chapters[0].sub_topic_data[index];
+    sessionStorage.setItem("currentSubTopicId", subTopic.subtopicid);
+
+    setCurrentSubTopicIndex(index);
+    setCurrentContentType(contentType);
+
+    if (contentType === 'lesson' && subTopic.lesson && subTopic.lesson.length > 0) {
+        setSelectedContent(subTopic.lesson[0]);
+        setCurrentLessonIndex(0);
+    } else if (contentType === 'notes' && subTopic.notes && subTopic.notes.length > 0) {
+        setSelectedContent(subTopic.notes[0]);
+        setContentType('notes');
+        setCurrentNotesIndex(0);
+    } else if (contentType === 'mcq') {
+        if (!hasFetched) {
             await fetchMCQQuestions(index);
             setCurrentMCQIndex(0);
-        } else if (contentType === 'coding') {
-            await fetchCodingQuestions(index);
+            setHasFetched(true);
         }
-    
-        handleViewChange(contentType);
-    }, [chapters, fetchMCQQuestions, fetchCodingQuestions]);
-    
-    useEffect(() => {
-        if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
-            fetchMCQQuestions(0);
+    } else if (contentType === 'coding') {
+        if (!hasFetched) {
+            await fetchCodingQuestions(index);
             setHasFetched(true);
-          }
+        }
+    }
 
-          if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
-            fetchCodingQuestions(0);
+    handleViewChange(contentType);
+}, [chapters, fetchMCQQuestions, fetchCodingQuestions, hasFetched]);
+
+    useEffect(() => {
+    if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
+        Promise.all([
+            fetchMCQQuestions(0),
+            fetchCodingQuestions(0)
+        ]).then(() => {
             setHasFetched(true);
-          }
-    }, [fetchMCQQuestions, fetchCodingQuestions, studentId, subject, dayNumber]);
+        });
+    }
+}, [fetchMCQQuestions, fetchCodingQuestions, studentId, subject, dayNumber]);
 
 
 return (
