@@ -37,7 +37,7 @@
     "install": "^0.13.0",
     "lucide-react": "^0.471.1",
     "material-react-table": "^3.0.1",
-    "pdfjs-dist": "^3.4.120",
+    "pdfjs-dist": "^3.11.174",
     "react": "^19.0.0",
     "react-ace": "^13.0.0",
     "react-bootstrap": "^2.10.8",

@@ -105,6 +105,15 @@ const PyEditor: React.FC = () => {
   const actualEmail= CryptoJS.AES.decrypt(sessionStorage.getItem('Email')!, secretKey).toString(CryptoJS.enc.Utf8);
   const actualName= CryptoJS.AES.decrypt(sessionStorage.getItem('Name')!, secretKey).toString(CryptoJS.enc.Utf8);
  
+  const encryptData = (data: string) => {
+  return CryptoJS.AES.encrypt(data, secretKey).toString();
+};
+
+const decryptData = (encryptedData: string) => {
+  const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
+  return bytes.toString(CryptoJS.enc.Utf8);
+};
+
   useEffect(() => {
     const script = document.createElement('script');
     // script.src = "https://cdn.jsdelivr.net/npm/skulpt@1.1.0/dist/skulpt.min.js";
@@ -155,9 +164,11 @@ const PyEditor: React.FC = () => {
         setStatus(questionsWithSavedCode[initialIndex].status);
         setEnteredAns(questionsWithSavedCode[initialIndex].entered_ans);
         setFunctionCall(questionsWithSavedCode[initialIndex].FunctionCall || '');
-        setAns(questionsWithSavedCode[initialIndex].entered_ans || 
-              questionsWithSavedCode[initialIndex]?.Ans + '\n' + questionsWithSavedCode[initialIndex]?.FunctionCall || ''); 
+        // setAns(questionsWithSavedCode[initialIndex].entered_ans || 
+        //       questionsWithSavedCode[initialIndex]?.Ans + '\n' + questionsWithSavedCode[initialIndex]?.FunctionCall || ''); 
+        setAns(questionsWithSavedCode[initialIndex].entered_ans ||  ''); 
         setLoading(false);
+        setRunResponseTestCases(questionsWithSavedCode[initialIndex].RunResponseTestCases);
 
       } catch (innerError: any) {
             setLoading(false);
@@ -268,73 +279,79 @@ const PyEditor: React.FC = () => {
     );
   };
 
-  const handleQuestionChange = (index: number) => {
-    if (questions[currentQuestionIndex]?.Qn_name && Ans) {
-      const currentCodeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
-      sessionStorage.setItem(currentCodeKey, Ans);
-    }
-    
-    setOutput('');
-    setCurrentQuestionIndex(index);
-    setStatus(questions[index].status);
-    
-    const nextQuestionKey = getUserCodeKey(questions[index].Qn_name);
+const handleQuestionChange = (index: number) => {
+  if (questions[currentQuestionIndex]?.Qn_name && Ans) {
+    const currentCodeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
+    sessionStorage.setItem(currentCodeKey, Ans);
+  }
+
+  setOutput('');
+  setCurrentQuestionIndex(index);
+
+  // Retrieve and decrypt the submit status from session storage
+  const submitStatusKey = `submitStatus_${studentId}_${subject}_${weekNumber}_${dayNumber}_${questions[index].Qn_name}`;
+  const encryptedSubmitStatus = sessionStorage.getItem(submitStatusKey);
+  const isSubmittedStatus = encryptedSubmitStatus ? decryptData(encryptedSubmitStatus) === 'true' : false;
+
+  setStatus(questions[index].status);
+  setIsSubmitted(isSubmittedStatus);
+
+  const nextQuestionKey = getUserCodeKey(questions[index].Qn_name);
+  const savedCode = sessionStorage.getItem(nextQuestionKey);
+
+  if (savedCode !== null) {
+    setEnteredAns(savedCode);
+    setAns(savedCode);
+  } else {
+    setEnteredAns(questions[index].entered_ans);
+    setAns(questions[index].entered_ans || '');
+  }
+
+  const question = questions[index];
+  setTestCases(question.TestCases || []);
+
+  setRunResponseTestCases([]);
+  setSuccessMessage("");
+  setAdditionalMessage("");
+};
+
+
+
+const handleNext = () => {
+  if (questions[currentQuestionIndex]?.Qn_name && Ans) {
+    const currentCodeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
+    sessionStorage.setItem(currentCodeKey, Ans);
+  }
+
+  setIsNextBtn(false);
+  if (currentQuestionIndex == questions.length - 1) {
+    navigate('/subject-roadmap');
+  } else {
+    const nextIndex = currentQuestionIndex + 1;
+    setCurrentQuestionIndex(nextIndex);
+
+    const nextQuestionKey = getUserCodeKey(questions[nextIndex].Qn_name);
     const savedCode = sessionStorage.getItem(nextQuestionKey);
-    
+
+    setStatus(questions[nextIndex].status);
+
     if (savedCode !== null) {
       setEnteredAns(savedCode);
       setAns(savedCode);
     } else {
-      setEnteredAns(questions[index].entered_ans);
-      setAns(questions[index].entered_ans || 
-            questions[index]?.Ans + '\n' + questions[index]?.FunctionCall || '');
+      setEnteredAns(questions[nextIndex].entered_ans);
+      setAns(questions[nextIndex].entered_ans || '');
     }
-    
-    const question = questions[index];
-    setTestCases(question.TestCases || []);
-    
-    setRunResponseTestCases([]); 
-    setSuccessMessage(""); 
-    setAdditionalMessage(""); 
-    setIsSubmitted(false);
-  };
 
-  const handleNext = () => {
-    if (questions[currentQuestionIndex]?.Qn_name && Ans) {
-      const currentCodeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
-      sessionStorage.setItem(currentCodeKey, Ans);
-    }
-    
-    setIsNextBtn(false);
-    if (currentQuestionIndex == questions.length - 1) {
-      navigate('/subject-roadmap');
-    }
-    else {
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      
-      const nextQuestionKey = getUserCodeKey(questions[nextIndex].Qn_name);
-      const savedCode = sessionStorage.getItem(nextQuestionKey);
-      
-      setStatus(questions[nextIndex].status);
-      
-      if (savedCode !== null) {
-        setEnteredAns(savedCode);
-        setAns(savedCode);
-      } else {
-        setEnteredAns(questions[nextIndex].entered_ans);
-        setAns(questions[nextIndex].entered_ans || 
-              questions[nextIndex]?.Ans + '\n' + questions[nextIndex]?.FunctionCall || '');
-      }
-      
-      setTestCases(questions[nextIndex].TestCases || []);
-      
-      setRunResponseTestCases([]); 
-      setSuccessMessage(""); 
-      setAdditionalMessage(""); 
-      setIsSubmitted(false);
-    }
-  };
+    setTestCases(questions[nextIndex].TestCases || []);
+
+    setRunResponseTestCases([]);
+    setSuccessMessage("");
+    setAdditionalMessage("");
+    setIsSubmitted(false);
+  }
+};
+
 
   const handleCheckCode = async () => {
     if (questions[currentQuestionIndex]?.Qn_name) {
@@ -385,11 +402,12 @@ const PyEditor: React.FC = () => {
         subject_id: subjectId,
         Qn: questions[currentQuestionIndex].Qn_name,
         Code: Ans,
-        Result: output.trimEnd(),
+        Result: output,
         CallFunction: "",
         TestCases: questions[currentQuestionIndex].TestCases,
         Attempt: 0
       };
+      console.log("Post data:", postData);
 
       const response = await axios.post(
         url,
@@ -495,71 +513,71 @@ const PyEditor: React.FC = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    setIsSubmitted(true);
-    setProcessing(true);
-    const url="https://staging-exskilence-be.azurewebsites.net/api/student/coding/"
+const handleSubmit = async () => {
+  setIsSubmitted(true);
+  setProcessing(true);
+  const url = "https://staging-exskilence-be.azurewebsites.net/api/student/coding/";
+
+  try {
+    const postData = {
+      student_id: studentId,
+      week_number: weekNumber,
+      day_number: dayNumber,
+      subject: subject,
+      subject_id: subjectId,
+      Qn: questions[currentQuestionIndex].Qn_name,
+      Code: Ans,
+      CallFunction: "",
+      Result: runResponseTestCases,
+      // TestCases: runResponseTestCases,
+      Attempt: 0
+    };
+
+    const response = await axios.put(url, postData);
+    const responseData = response.data;
+
+    const updatedQuestions = [...questions];
+    updatedQuestions[currentQuestionIndex].status = true;
+    setQuestions(updatedQuestions);
+    setStatus(true);
+
+    const codeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
+    sessionStorage.setItem(codeKey, Ans);
+
+    // Encrypt and store the submit status in session storage
+    const submitStatusKey = `submitStatus_${studentId}_${subject}_${weekNumber}_${dayNumber}_${questions[currentQuestionIndex].Qn_name}`;
+    sessionStorage.setItem(submitStatusKey, encryptData("true"));
+
+    setIsNextBtn(true);
+  } catch (innerError: any) {
+    setSuccessMessage("Error");
+    setAdditionalMessage("There was an error submitting the code.");
+    const errorData = innerError.response?.data || {
+      message: innerError.message,
+      stack: innerError.stack
+    };
+
+    const body = {
+      student_id: actualStudentId,
+      Email: actualEmail,
+      Name: actualName,
+      URL_and_Body: `${url}\n + ""`,
+      error: errorData.error,
+    };
+
     try {
-      const postData = {
-        student_id: studentId,
-        week_number: weekNumber,
-        day_number: dayNumber,
-        subject: subject,
-        subject_id: subjectId,
-        Qn: questions[currentQuestionIndex].Qn_name,
-        Ans: Ans,
-        CallFunction: "",
-        Result: runResponseTestCases,
-        Attempt: 0
-      };
-
-      const response = await axios.put(
-        url,
-        postData
-      );
-
-      const responseData = response.data;
-      
-      const updatedQuestions = [...questions];
-      updatedQuestions[currentQuestionIndex].status = true;
-      setQuestions(updatedQuestions);
-      setStatus(true);
-      
-      const codeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
-      sessionStorage.setItem(codeKey, Ans);
- 
-    } 
-    
-    catch (innerError: any) {
-      setSuccessMessage("Error");
-       setAdditionalMessage("There was an error for submitting the code.");
-            const errorData = innerError.response?.data || {
-                message: innerError.message,
-                stack: innerError.stack
-            };
- 
-            const body = {
-                student_id: actualStudentId,
-                Email: actualEmail,
-                Name: actualName,
-                URL_and_Body: `${url}\n + ""`,
-                error: errorData.error,
-            };
- 
-            try {
-                await axios.post(
-                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
-                body
-                );
-            } catch (loggingError) {
-                console.error("Error logging the python code submit error:", loggingError);
-            }
- 
-            console.error("Error fetching python code submit data:", innerError);
-            } finally {
-      setProcessing(false);
+      await axios.post("https://staging-exskilence-be.azurewebsites.net/api/errorlog/", body);
+    } catch (loggingError) {
+      console.error("Error logging the python code submit error:", loggingError);
     }
-  };
+
+    console.error("Error fetching python code submit data:", innerError);
+  } finally {
+    setProcessing(false);
+  }
+};
+
+
 
   if (loading) {
     return (
@@ -572,25 +590,26 @@ const PyEditor: React.FC = () => {
   }
 
   return (
-    <div className="container-fluid p-0" style={{ height: 'calc(100vh - 90px)',  overflowX: "hidden", overflowY: "hidden", backgroundColor: "#f2eeee" }}>
-      <div className="p-0 my-0 me-2" style={{ backgroundColor: "#F2EEEE"}}>
+    <div className="container-fluid p-0" style={{ height: 'calc(100vh - 70px)', overflowX: "hidden", overflowY: "hidden", backgroundColor: "#f2eeee" }}>
+      <div className="p-0 my-0" style={{ backgroundColor: "#F2EEEE", marginRight: '10px' }}>
         <div className="container-fluid p-0 pt-2" style={{ maxWidth: "100%", overflowX: "hidden", overflowY: "auto", backgroundColor: "#f2eeee" }}>
           <div className="row g-2">
             <div className="col-12">
-              <div className="bg-white border rounded-2" style={{ height: "calc(100vh - 100px)", overflowY: "auto", padding: '20px 11px 15px 15px' }}>
-                <div className="d-flex h-100">
+              <div className="" style={{ height: "100vh", overflow: "hidden", padding: '0px 0px 65px 0px' }}>
+                <div className="d-flex" style={{ height: '100%', width: '100%' }}>
                   {/* Question List */}
-                  <div className="d-flex flex-column align-items-center" style={{ width: "80px"}}>
+                  <div className="col-1 lg-8" style={{ width: "70px", display: "flex", flexDirection: "column", paddingRight: "15px" }}>
                     {questions.map((_, index) => (
                       <button
                         key={index}
-                        className="btn border border-dark rounded-2 mb-2 px-1 mx-auto"
-                        style={{ 
-                          width: "60px", 
-                          height: "60px", 
-                          backgroundColor: currentQuestionIndex === index ? "#42FF58" : "#FFFFFF", 
-                          color: "#000", 
-                          cursor: "pointer" 
+                        className="btn rounded-2 mb-2 px-1 mx-auto"
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          backgroundColor: currentQuestionIndex === index ? "#42FF58" : "#FFFFFF",
+                          color: "#000",
+                          cursor: "pointer",
+                          boxShadow: "#888 1px 2px 5px 0px"
                         }}
                         onClick={() => handleQuestionChange(index)}
                       >
@@ -598,80 +617,53 @@ const PyEditor: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                  {/* Question Section */}
-                  <div className="col-5 lg-8" style={{height: "100%", display: "flex", flexDirection: "column", marginLeft: '20px'}}>
-                    <div className="border border-dark rounded-2 d-flex flex-column" style={{ height: "calc(100% - 5px)", backgroundColor: "#E5E5E533" }}>
-                      <div className="border-bottom border-dark p-3 d-flex justify-content-between align-items-center">
-                        <h5 className="m-0">Problem Statement</h5>
+
+                  {/* Problem Statement */}
+                  <div className="col-5 lg-8 bg-white" style={{ height: "100%", display: "flex", flexDirection: "column", marginLeft: "-10px", marginRight: "10px" }}>
+                    <div className="bg-white" style={{ height: "45%", backgroundColor: "#E5E5E533" }}>
+                      <div className="p-3 flex-grow-1 overflow-auto">
+                        <p>{questions[currentQuestionIndex]?.Qn}</p>
                       </div>
-                      <div className="p-3 overflow-auto" >
-                        <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
-                          {questions[currentQuestionIndex]?.Qn}
-                        </pre>
-                        {questions[currentQuestionIndex].Examples && questions[currentQuestionIndex].Examples.length > 0 && (
-                          <div className="mt-3">
-                            <h6>Examples:</h6>
-                            {questions[currentQuestionIndex].Examples.map((example, index) => (
-                              <div key={index} className="border border-dark rounded-2 p-2 mb-2 bg-light">
-                                <div className="mb-1">
-                                  <strong>Input:</strong>
-                                  <pre className="m-0" style={{ whiteSpace: 'pre-wrap' }}>
-                                    {example.Example.Inputs && example.Example.Inputs.join('\n')}
-                                  </pre>
-                                </div>
-                                <div className="mb-1">
-                                  <strong>Output:</strong>
-                                  <pre className="m-0" style={{ whiteSpace: 'pre-wrap' }}>{example.Example.Output}</pre>
-                                </div>
-                                {example.Example.Explanation && (
-                                  <div>
-                                    <strong>Explanation:</strong>
-                                    <p className="m-0">{example.Example.Explanation}</p>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                    </div>
+                    <div className="bg-white" style={{ height: "50%", backgroundColor: "#E5E5E533" }}>
+                      {/* Additional content or tabs can go here */}
                     </div>
                   </div>
 
                   {/* Editor Section */}
-                  <div className="col-6 lg-8" style={{height: "100%", display: "flex", flexDirection: "column", marginLeft: "25px"}}> 
-                    <div className="border border-dark rounded-2 me-3" style={{ height: "45%", backgroundColor: "#E5E5E533" }}>
-                      <div className="border-bottom border-dark p-3 d-flex justify-content-between align-items-center">
-                        <h5 className="m-0">Python</h5>
-                      </div>
+                  <div className="col-6 lg-8" style={{ height: "100%", display: "flex", flexDirection: "column", width: '55.1%' }}>
+                    <div className="bg-white me-3" style={{ height: "45%", backgroundColor: "#E5E5E533" }}>
                       <AceEditor
                         mode="python"
                         theme="dreamweaver"
                         onChange={handleCodeChange}
-                        value={Ans}
-                        fontSize={16}
-                        showPrintMargin={true}
-                        showGutter={true}
-                        highlightActiveLine={true}
+                        value={Ans || enteredAns}
+                        fontSize={14}
+                        showPrintMargin={false}
+                        // showGutter={false}
+                        // highlightActiveLine={false}
                         wrapEnabled={true}
-                        setOptions={{ useWorker: false }}
-                        style={{ width: "100%", height: "calc(100% - 60px)" }}
+                        className="pe-3"
+                        style={{ width: "95%", height: "calc(100% - 60px)", marginTop: "20px", margin: '15px' }}
                       />
                     </div>
-                    <div style={{ height: "9%", padding: "10px 0" }} className="d-flex flex-column justify-content-center me-3">
+
+                    {/* Processing and Buttons */}
+                    <div style={{ height: "6%", marginRight: '37px', backgroundColor: "#E5E5E533" }} className="d-flex flex-column justify-content-center processingDiv">
                       <div className="d-flex justify-content-between align-items-center h-100">
                         <div className="d-flex flex-column justify-content-center">
                           {processing ? (
-                            <h5 className="m-0">Processing...</h5>
+                            <h5 className="m-0 processingDivHeadingTag">Processing...</h5>
                           ) : (
                             <>
-                              {successMessage && <h5 className="m-0">{successMessage}</h5>}
-                              {additionalMessage && <p className="m-0" style={{ fontSize: "12px" }}>{additionalMessage}</p>}
+                              {successMessage && <h5 className="m-0 ps-1" style={{ fontSize: '14px' }}>{successMessage}</h5>}
+                              {additionalMessage && <p className="processingDivParaTag m-0 ps-1" style={{ fontSize: "10px" }}>{additionalMessage}</p>}
                             </>
                           )}
                         </div>
                         <div className="d-flex justify-content-end align-items-center">
-                        <button
-                            className="btn btn-sm btn-light me-2 "
+                          <button
+                            className="btn btn-sm btn-light me-2 processingDivButton"
                             style={{
                               whiteSpace: "nowrap",
                               fontSize: "12px",
@@ -679,13 +671,13 @@ const PyEditor: React.FC = () => {
                               boxShadow: "#888 1px 2px 5px 0px",
                               height: "30px"
                             }}
-                            disabled={processing}
                             onClick={handleCheckCode}
+                            disabled={processing}
                           >
                             RUN CODE
                           </button>
                           <button
-                            className="btn btn-sm btn-light me-2 "
+                            className="btn btn-sm btn-light me-2 processingDivButton"
                             style={{
                               backgroundColor: "#FBEFA5DB",
                               whiteSpace: "nowrap",
@@ -695,36 +687,33 @@ const PyEditor: React.FC = () => {
                               height: "30px"
                             }}
                             onClick={handleSubmit}
-                            disabled={isSubmitted || processing || status == true}
+                            disabled={isSubmitted || processing || status }
                           >
-                          {(status == false && !isSubmitted) ? "SUBMIT CODE" : "SUBMITTED"}
+                            {(isSubmitted || status) ? "SUBMITTED" : "SUBMIT CODE"}
                           </button>
-
-                          {(isSubmitted || status == true) ?                             
-                          <button
-                            className="btn btn-sm btn-light"
-                            style={{
-                              whiteSpace: "nowrap",
-                              fontSize: "12px",
-                              minWidth: "70px",
-                              boxShadow: "#888 1px 2px 5px 0px",
-                              height: "30px"
-                            }}
-                            onClick={handleNext}
-                          >
-                            NEXT
-                          </button> : 
-                            null
+                          {(isSubmitted || status) &&
+                            <button
+                              className="btn btn-sm btn-light processingDivButton"
+                              style={{
+                                whiteSpace: "nowrap",
+                                fontSize: "12px",
+                                minWidth: "70px",
+                                boxShadow: "#888 1px 2px 5px 0px",
+                                height: "30px"
+                              }}
+                              disabled={processing}
+                              onClick={handleNext}
+                            >
+                              NEXT
+                            </button>
                           }
                         </div>
                       </div>
                     </div>
 
-                    <div className="border border-dark rounded-2 me-3" style={{ height: "45%", backgroundColor: "#E5E5E533" }}>
-                      <div className="border-bottom border-dark p-3 d-flex justify-content-between align-items-center">
-                        <h5 className="m-0">Output</h5>
-                      </div>
-                      <div className="p-3 overflow-auto" style={{ height: "calc(100% - 60px)" }}>
+                    {/* Output Section */}
+                    <div className="bg-white me-3" style={{ height: "48%", backgroundColor: "#E5E5E533" }}>
+                      <div className="p-3 overflow-auto" style={{ height: "calc(100% - 10px)" }}>
                         <pre
                           className="m-0"
                           id="output"
@@ -736,18 +725,18 @@ const PyEditor: React.FC = () => {
                           {output}
                         </pre>
                         {runResponseTestCases && (
-                          <div className="col mt-3 mb-5">
+                          <div className="col mt-3">
                             {runResponseTestCases.map((testCase, index) => (
-                                <div
-                                    key={index}
-                                    className="d-flex align-items-center mb-2 border border-ligth shadow bg-white rounded p-2 rounded-2"
-                                    style={{ width: "fit-content", fontSize: "12px" }}
-                                >
-                                    <span className="me-2">{Object.keys(testCase)[0]}:</span>
-                                    <span style={{ color: Object.values(testCase)[0] === "Passed" ? "blue" : Object.values(testCase)[0] === "True" ? "blue" : "red" }}>
-                                    {Object.values(testCase)[0] as React.ReactNode}
-                                    </span>
-                                </div>
+                              <div
+                                key={index}
+                                className="d-flex align-items-center mb-2 border border-ligth shadow bg-white p-2 rounded-2"
+                                style={{ width: "fit-content", fontSize: "12px" }}
+                              >
+                                <span className="me-2">{Object.keys(testCase)[0]}:</span>
+                                <span style={{ color: Object.values(testCase)[0] === "Passed" ? "blue" : Object.values(testCase)[0] === "True" ? "blue" : "red" }}>
+                                  {Object.values(testCase)[0] as React.ReactNode}
+                                </span>
+                              </div>
                             ))}
                           </div>
                         )}

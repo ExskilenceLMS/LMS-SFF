@@ -20,6 +20,9 @@ import { CiSquareChevUp } from "react-icons/ci";
 import { BsListTask } from "react-icons/bs";
 import { set } from 'date-fns';
 import { overflow } from 'html2canvas/dist/types/css/property-descriptors/overflow';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 interface NoteSection {
     heading: string;
     content: string;
@@ -746,110 +749,91 @@ const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer:
         const notesUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.notes?.[currentNotesIndex];
         const lessonVideoUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.lesson?.[currentLessonIndex] || '';
 
-        if (notesUrl && notesUrl.endsWith('.pdf')) {
-            setPdfLoading(true);
-            setPdfError(false);
-            setLoading(true);
-            const url='https://staging-exskilence-be.azurewebsites.net/media/';
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file_url: notesUrl })
-                });
+    if (notesUrl && notesUrl.endsWith('.pdf')) {  
+        setPdfLoading(true);
+        setPdfError(false);
+        setLoading(true);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+        const url = 'https://staging-exskilence-be.azurewebsites.net/media/';
 
-                const blob = await response.blob();
-                const processedUrl = URL.createObjectURL(blob);
-                setPdfUrl(processedUrl);
-            } 
-            catch (innerError: any) {
-                setPdfError(true);
+        axios.post(url, { file_url: notesUrl })
+        .then(response => {
+            const blob = response.data.url;  
+            // const processedUrl = URL.createObjectURL(blob);
+            console.log("Note URL:", blob);
+            setPdfUrl(blob);
+        })
+        .catch(innerError => {
+            setPdfError(true);
             const errorData = innerError.response?.data || {
-                message: innerError.message,
-                stack: innerError.stack
+            message: innerError.message,
+            stack: innerError.stack
             };
- 
+
             const body = {
-                student_id: actualStudentId,
-                Email: actualEmail,
-                Name: actualName,
-                URL_and_Body: `${url}\n + ""`,
-                error: errorData.error,
+            student_id: actualStudentId,
+            Email: actualEmail,
+            Name: actualName,
+            URL_and_Body: `${url}\n + ""`,
+            error: errorData.error,
             };
- 
-            try {
-                await axios.post(
-                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
-                body
-                );
-            } catch (loggingError) {
-                console.error("Error logging the pdf error:", loggingError);
-            }
- 
-            console.error("Error fetching pdf data:", innerError);
-            }
-             finally {
-                setPdfLoading(false);
-                setLoading(false);
-            }
-        }
+
+            axios.post(
+            "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+            body
+            ).catch(loggingError => {
+            console.error("Error logging the error:", loggingError);
+            });
+
+            console.error("Error fetching note:", innerError);
+        })
+        .finally(() => {
+            setPdfLoading(false);
+        });
+    }
+
 
         if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
             setVideoLoading(true);
             setVideoError(false);
-            setLoading(true);
-            setVideoUrl('');
-            const url='https://staging-exskilence-be.azurewebsites.net/media/'
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file_url: lessonVideoUrl })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const blob = await response.blob();
-                const processedUrl = URL.createObjectURL(blob);
-                setVideoUrl(processedUrl);
-            } 
-            catch (innerError: any) {
+            
+            const url = 'https://staging-exskilence-be.azurewebsites.net/media/';
+            
+            axios.post(url, { file_url: lessonVideoUrl })
+              .then(response => {
+                const blob = response.data.url;  
+                // const processedUrl = URL.createObjectURL(blob);
+                console.log("Video URL:", blob);
+                setVideoUrl(blob);
+              })
+              .catch(innerError => {
                 setVideoError(true);
-            const errorData = innerError.response?.data || {
-                message: innerError.message,
-                stack: innerError.stack
-            };
- 
-            const body = {
-                student_id: actualStudentId,
-                Email: actualEmail,
-                Name: actualName,
-                URL_and_Body: `${url}\n + ""`,
-                error: errorData.error,
-            };
- 
-            try {
-                await axios.post(
-                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
-                body
-                );
-            } catch (loggingError) {
-                console.error("Error logging the login error:", loggingError);
-            }
- 
-            console.error("Error fetching login data:", innerError);
-            }
-             finally {
+                const errorData = innerError.response?.data || {
+                  message: innerError.message,
+                  stack: innerError.stack
+                };
+      
+                const body = {
+                  student_id: actualStudentId,
+                  Email: actualEmail,
+                  Name: actualName,
+                  URL_and_Body: `${url}\n + ""`,
+                  error: errorData.error,
+                };
+      
+                axios.post(
+                  "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                  body
+                ).catch(loggingError => {
+                  console.error("Error logging the error:", loggingError);
+                });
+      
+                console.error("Error fetching video:", innerError);
+              })
+              .finally(() => {
                 setVideoLoading(false);
-                setLoading(false);
-            }
-        }
+              });
+          }
     };
 
     fetchMedia();
@@ -960,9 +944,15 @@ const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer:
                             Failed to load PDF
                         </div>
                     ) : (
-                        <div className="w-100 h-100" style={{ overflow: 'auto' }}>
-                            <Viewer fileUrl={pdfUrl}  />
-                        </div>
+                        // <div className="w-100 h-100" style={{ overflow: 'auto' }}>
+                        //     <Viewer fileUrl={pdfUrl}  />
+                        // </div>
+                    <iframe
+                    src={pdfUrl}
+                    className="w-100 h-100"
+                    title="HTML Notes"
+                    style={{ border: 'none' }}
+                />
                     )}
                 </Worker>
             );
