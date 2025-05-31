@@ -944,8 +944,8 @@ const fetchRoadmapData = async () => {
         if (loading || error || !chapters.length || !chapters[0].sub_topic_data[currentSubTopicIndex]?.notes?.length) {
             return (
                 <div>
-                    <Skeleton count={6} height={20} width={100} />
-                    <Skeleton count={6} height={20} />
+                    {/* <Skeleton count={6} height={20} width={100} />
+                    <Skeleton count={6} height={20} /> */}
                 </div>
             );
         }
@@ -1251,7 +1251,7 @@ const handleNext = useCallback(async () => {
                             console.log(allSubtopicIdsList);
                         } else {
                             setShowUpdateModal(true);
-                            setModalMessage("Please complete the current lesson before moving to the next one");
+                            setModalMessage(response3.data.qns_status);
                             setDisableNextBtn(false);
                         }
                     } catch (innerError: any) {
@@ -1328,7 +1328,7 @@ const handleNext = useCallback(async () => {
                             console.log(allSubtopicIdsList);
                         } else {
                             setShowUpdateModal(true);
-                            setModalMessage("Please complete the current lesson before moving to the next one");
+                            setModalMessage(response3.data.qns_status);
                             setDisableNextBtn(false);
                         }
                     } catch (innerError: any) {
@@ -1416,7 +1416,7 @@ const handleNext = useCallback(async () => {
                                     console.log(allSubtopicIdsList);
                                 } else {
                                     setShowUpdateModal(true);
-                                    setModalMessage("Please complete the current lesson before moving to the next one");
+                                    setModalMessage(response3.data.qns_status);
                                     setDisableNextBtn(false);
                                 }
                             } catch (innerError: any) {
@@ -1499,7 +1499,7 @@ const handleNext = useCallback(async () => {
                     console.log(allSubtopicIdsList);
                 } else {
                     setShowUpdateModal(true);
-                    setModalMessage("Please complete the current lesson before moving to the next one");
+                    setModalMessage(response3.data.qns_status);
                     setDisableNextBtn(false);
                 }
             }catch (innerError: any) {
@@ -1548,7 +1548,7 @@ const handleNext = useCallback(async () => {
                     console.log(allSubtopicIdsList);
                 } else {
                     setShowUpdateModal(true);
-                    setModalMessage("Please complete the next one.");
+                    setModalMessage(response3.data.qns_status);
                     setDisableNextBtn(false);
                 }
             } catch (innerError: any) {
