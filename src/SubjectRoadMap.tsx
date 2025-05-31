@@ -201,110 +201,125 @@ useEffect(() => {
     if (storedContentType) {
         setCurrentView(storedContentType as 'lesson' | 'mcq' | 'coding' | 'notes');
     }
+const fetchRoadmapData = async () => {
+    const url = `https://staging-exskilence-be.azurewebsites.net/api/student/learningmodules/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/`;
+    const url1 = "https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/";
 
-    const fetchRoadmapData = async () => {
-        const url=`https://staging-exskilence-be.azurewebsites.net/api/student/learningmodules/${studentId}/${subject}/${subjectId}/${dayNumber}/${weekNumber}/`
-        const url1="https://staging-exskilence-be.azurewebsites.net/api/student/lessons/status/"
-        try {
-            setLoading(true);
-            setDisablePreviousBtn(true);
-            const response = await axios.get(url);
-            setChapters(response.data);
-            var variable=response.data[0].day_completed;
-            
-            const allSubtopicIds = response.data.flatMap((chapter: { sub_topic_data: any[]; }) =>
-                chapter.sub_topic_data.map(subtopic => subtopic.subtopicid)
-            );
+    try {
+        setLoading(true);
+        setDisablePreviousBtn(true);
 
-             allSubtopicIdsList = allSubtopicIds;
-            console.log("All Subtopic IDs:", allSubtopicIdsList); 
+        const response = await axios.get(url);
+        const responseData = response.data;
 
-            if (response.data.length > 0) {
-                const chapter = response.data[0];
-                const userSubtopicId = chapter.user_subtopic_id;
-                console.log('heyyyyyy',response.data[0].sub_topic_data[0].subtopicid)
-               variable? sessionStorage.setItem("currentSubTopicId", response.data[0].sub_topic_data[0].subtopicid): sessionStorage.setItem("currentSubTopicId", userSubtopicId);
-                const newUnlockedSubtopics = new Set<string>();
+        setChapters(responseData);
+        const variable = responseData[0].day_completed;
 
-                chapter.sub_topic_data.forEach((subtopic: SubTopic) => {
-                    if (subtopic.subtopicid <= userSubtopicId) {
-                        newUnlockedSubtopics.add(subtopic.subtopicid);
-                    }
-                });
-                setUnlockedSubtopics(newUnlockedSubtopics);
-                sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newUnlockedSubtopics)));
+        const allSubtopicIds = responseData.flatMap((chapter: Chapter) =>
+            chapter.sub_topic_data.map((subtopic: SubTopic) => subtopic.subtopicid)
+        );
+
+        allSubtopicIdsList = allSubtopicIds;
+        console.log("All Subtopic IDs:", allSubtopicIdsList);
+
+        if (responseData.length > 0) {
+            const chapter = responseData[0];
+            const userSubtopicId = chapter.user_subtopic_id;
+
+            // Retrieve currentSubTopicId from session
+            const currentSubTopicIdFromSession = sessionStorage.getItem("currentSubTopicId");
+
+            // Check if currentSubTopicId from session is applicable to the current day
+            const isCurrentSubTopicIdValid = currentSubTopicIdFromSession && chapter.sub_topic_data.some((subtopic: SubTopic) => subtopic.subtopicid === currentSubTopicIdFromSession);
+
+            // Only update currentSubTopicId if it is not applicable to the current day
+            if (!isCurrentSubTopicIdValid) {
+                sessionStorage.setItem("currentSubTopicId", variable ? responseData[0].sub_topic_data[0].subtopicid : userSubtopicId);
             }
 
-            if (response.data.length > 0) {
-                            let unlockSubTopicId = JSON.parse(sessionStorage.getItem("unlockedSubtopics") || "[]");
-        let currentSubTopicId = sessionStorage.getItem("currentSubTopicId");
-
-        if (currentSubTopicId && unlockSubTopicId.length) {
-            console.log('xyz');
-            console.log(currentSubTopicId, unlockSubTopicId);
-            let index = unlockSubTopicId.indexOf(currentSubTopicId);
-            console.log(index); 
-            sessionStorage.setItem("lastSubTopicIndex", Number(index).toString());
-
-        }
-                const storedIndex = sessionStorage.getItem("lastSubTopicIndex");
-                setExpandedSections([storedIndex ? parseInt(storedIndex) : 0]);
-                if (storedIndex && parseInt(storedIndex) < response.data[0].sub_topic_data.length) {
-                    setCurrentSubTopicIndex(parseInt(storedIndex));
-                } else {
-                    setCurrentSubTopicIndex(0);
+            const newUnlockedSubtopics = new Set<string>();
+            chapter.sub_topic_data.forEach((subtopic: SubTopic) => {
+                if (subtopic.subtopicid <= userSubtopicId) {
+                    newUnlockedSubtopics.add(subtopic.subtopicid);
                 }
-                const firstChapter = response.data[0];
-                if (firstChapter.sub_topic_data && firstChapter.sub_topic_data.length > 0) {
-                    const subTopic = firstChapter.sub_topic_data[currentSubTopicIndex];
-                    if (subTopic.lesson && subTopic.lesson.length > 0) {
-                        setSelectedContent(subTopic.lesson[0]);
-                    }
-                }
-            }
-
-            const response1 = await axios.put(url1, {
-                "student_id": studentId,
-                "subject": subject,
-                "subject_id": subjectId,
-                "day_number": dayNumber,
-                "week_number": weekNumber,
-                "sub_topic": sessionStorage.getItem('currentSubTopicId') || "",
-                "status": false
             });
 
-            setLoading(false);
-            setDisablePreviousBtn(false);
-        } 
-        catch (innerError: any) {
-            setError("Failed to load learning modules. Please try again later.");
-            setLoading(false);
-            setDisablePreviousBtn(false);
-            const errorData = innerError.response?.data || {
-                message: innerError.message,
-                stack: innerError.stack
-            };
- 
-            const body = {
-                student_id: actualStudentId,
-                Email: actualEmail,
-                Name: actualName,
-                URL_and_Body: `${url}\n + ""`,
-                error: errorData.error,
-            };
- 
-            try {
-                await axios.post(
+            setUnlockedSubtopics(newUnlockedSubtopics);
+            sessionStorage.setItem('unlockedSubtopics', JSON.stringify(Array.from(newUnlockedSubtopics)));
+        }
+
+        if (responseData.length > 0) {
+            let unlockSubTopicId = JSON.parse(sessionStorage.getItem("unlockedSubtopics") || "[]");
+            let currentSubTopicId = sessionStorage.getItem("currentSubTopicId");
+
+            if (currentSubTopicId && unlockSubTopicId.length) {
+                console.log('xyz');
+                console.log(currentSubTopicId, unlockSubTopicId);
+                let index = unlockSubTopicId.indexOf(currentSubTopicId);
+                console.log(index);
+                sessionStorage.setItem("lastSubTopicIndex", index.toString());
+            }
+
+            const storedIndex = sessionStorage.getItem("lastSubTopicIndex");
+            setExpandedSections([storedIndex ? parseInt(storedIndex) : 0]);
+
+            if (storedIndex && parseInt(storedIndex) < responseData[0].sub_topic_data.length) {
+                setCurrentSubTopicIndex(parseInt(storedIndex));
+            } else {
+                setCurrentSubTopicIndex(0);
+            }
+
+            const firstChapter = responseData[0];
+            if (firstChapter.sub_topic_data && firstChapter.sub_topic_data.length > 0) {
+                const subTopic = firstChapter.sub_topic_data[currentSubTopicIndex];
+                if (subTopic.lesson && subTopic.lesson.length > 0) {
+                    setSelectedContent(subTopic.lesson[0]);
+                }
+            }
+        }
+
+        await axios.put(url1, {
+            student_id: studentId,
+            subject: subject,
+            subject_id: subjectId,
+            day_number: dayNumber,
+            week_number: weekNumber,
+            sub_topic: sessionStorage.getItem('currentSubTopicId') || "",
+            status: false
+        });
+
+        setLoading(false);
+        setDisablePreviousBtn(false);
+    } catch (innerError: any) {
+        setError("Failed to load learning modules. Please try again later.");
+        setLoading(false);
+        setDisablePreviousBtn(false);
+
+        const errorData = innerError.response?.data || {
+            message: innerError.message,
+            stack: innerError.stack
+        };
+
+        const body = {
+            student_id: actualStudentId,
+            Email: actualEmail,
+            Name: actualName,
+            URL_and_Body: `${url}\n + ""`,
+            error: errorData.error,
+        };
+
+        try {
+            await axios.post(
                 "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
                 body
-                );
-            } catch (loggingError) {
-                console.error("Error logging the roadmap data error:", loggingError);
-            }
- 
-            console.error("Error fetching roadmap data:", innerError);
-            }
-    };
+            );
+        } catch (loggingError) {
+            console.error("Error logging the roadmap data error:", loggingError);
+        }
+
+        console.error("Error fetching roadmap data:", innerError);
+    }
+};
 
     fetchRoadmapData();
 }, [studentId, subject, dayNumber]);
@@ -603,34 +618,34 @@ useEffect(() => {
         }
     }, [currentMCQIndex, mcqQuestions, currentSubTopicIndex, chapters, fetchMCQQuestions]);
 
-const isNextButtonDisabled = useCallback(() => {
-    if (!chapters.length) return true;
+    const isNextButtonDisabled = useCallback(() => {
+        if (!chapters.length) return true;
 
-    if (currentView === 'lesson') {
-        const hasMoreLessons = currentLessonIndex < chapters[0].sub_topic_data[currentSubTopicIndex].lesson.length - 1;
-        const hasNotes = chapters[0].sub_topic_data[currentSubTopicIndex].notes &&
-                         chapters[0].sub_topic_data[currentSubTopicIndex].notes.length > 0;
-        const hasCodingQuestions = chapters[0].sub_topic_data[currentSubTopicIndex].codingQuestions > 0;
-        const hasMCQs = chapters[0].sub_topic_data[currentSubTopicIndex].mcqQuestions > 0;
-        return !hasMoreLessons && !hasNotes && !hasCodingQuestions && !hasMCQs;
-    }
-    else if (currentView === 'notes') {
-        const hasMoreNotes = currentNotesIndex < chapters[0].sub_topic_data[currentSubTopicIndex].notes.length - 1;
-        const hasCodingQuestions = chapters[0].sub_topic_data[currentSubTopicIndex].codingQuestions > 0;
-        const hasMCQs = chapters[0].sub_topic_data[currentSubTopicIndex].mcqQuestions > 0;
-        return !hasMoreNotes && !hasCodingQuestions && !hasMCQs;
-    }
-    else if (currentView === 'mcq') {
-        const hasMoreMCQs = currentMCQIndex < mcqQuestions.length - 1;
-        const hasCodingQuestions = chapters[0].sub_topic_data[currentSubTopicIndex].codingQuestions > 0;
-        return !hasMoreMCQs && !hasCodingQuestions;
-    }
-    else if (currentView === 'coding') {
-        return currentSubTopicIndex >= chapters[0].sub_topic_data.length - 1;
-    }
+        if (currentView === 'lesson') {
+            const hasMoreLessons = currentLessonIndex < chapters[0].sub_topic_data[currentSubTopicIndex].lesson.length - 1;
+            const hasNotes = chapters[0].sub_topic_data[currentSubTopicIndex].notes &&
+                            chapters[0].sub_topic_data[currentSubTopicIndex].notes.length > 0;
+            const hasCodingQuestions = chapters[0].sub_topic_data[currentSubTopicIndex].codingQuestions > 0;
+            const hasMCQs = chapters[0].sub_topic_data[currentSubTopicIndex].mcqQuestions > 0;
+            return !hasMoreLessons && !hasNotes && !hasCodingQuestions && !hasMCQs;
+        }
+        else if (currentView === 'notes') {
+            const hasMoreNotes = currentNotesIndex < chapters[0].sub_topic_data[currentSubTopicIndex].notes.length - 1;
+            const hasCodingQuestions = chapters[0].sub_topic_data[currentSubTopicIndex].codingQuestions > 0;
+            const hasMCQs = chapters[0].sub_topic_data[currentSubTopicIndex].mcqQuestions > 0;
+            return !hasMoreNotes && !hasCodingQuestions && !hasMCQs;
+        }
+        else if (currentView === 'mcq') {
+            const hasMoreMCQs = currentMCQIndex < mcqQuestions.length - 1;
+            const hasCodingQuestions = chapters[0].sub_topic_data[currentSubTopicIndex].codingQuestions > 0;
+            return !hasMoreMCQs && !hasCodingQuestions;
+        }
+        else if (currentView === 'coding') {
+            return currentSubTopicIndex >= chapters[0].sub_topic_data.length - 1;
+        }
 
-    return true;
-}, [chapters, currentView, currentSubTopicIndex, currentLessonIndex, currentNotesIndex, currentMCQIndex, mcqQuestions]);
+        return true;
+    }, [chapters, currentView, currentSubTopicIndex, currentLessonIndex, currentNotesIndex, currentMCQIndex, mcqQuestions]);
 
     const isPreviousButtonDisabled = useCallback(() => {
         if (!chapters.length) return true;
@@ -653,85 +668,85 @@ const isNextButtonDisabled = useCallback(() => {
     }, []);
 
 
-const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer: string) => {
-    const isCorrect = selectedAnswers[questionId] === correctAnswer;
+    const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer: string) => {
+        const isCorrect = selectedAnswers[questionId] === correctAnswer;
 
-    setSubmittedAnswers(prev => ({
-        ...prev,
-        [questionId]: isCorrect
-    }));
-
-    if (!isCorrect) {
-        setShowExplanation(prev => ({
+        setSubmittedAnswers(prev => ({
             ...prev,
-            [questionId]: true
+            [questionId]: isCorrect
         }));
-    }
 
-    setAnsweredQuestions(prev => {
-        const newSet = new Set(prev);
-        newSet.add(questionId);
-        return newSet;
-    });
-
-    const currentQuestion = mcqQuestions.find(q => q.Qn_name === questionId);
-
-    if (currentQuestion) {
-        const submissionData = {
-            student_id: studentId,
-            question_id: questionId,
-            correct_ans: correctAnswer,
-            entered_ans: selectedAnswers[questionId],
-            subject_id: subjectId,
-            subject: subject.split(" ")[0],
-            week_number: weekNumber,
-            day_number: parseInt(dayNumber)
-        };
-
-        setDisablePreviousBtn(true);
-        const url="https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/submit/"
-        try {
-            const response = await axios.post(
-                url,
-                submissionData
-            );
-
-            setMcqQuestions(prevQuestions =>
-                prevQuestions.map(question =>
-                    question.Qn_name === questionId
-                        ? { ...question, score: response.data.score }
-                        : question
-                )
-            );
-        }catch (innerError: any) {
-            const errorData = innerError.response?.data || {
-                message: innerError.message,
-                stack: innerError.stack
-            };
- 
-            const body = {
-                student_id: actualStudentId,
-                Email: actualEmail,
-                Name: actualName,
-                URL_and_Body: `${url}\n + ""`,
-                error: errorData.error,
-            };
- 
-            try {
-                await axios.post(
-                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
-                body
-                );
-            } catch (loggingError) {
-                console.error("Error logging the submitting answer error:", loggingError);
-            }
- 
-            console.error("Error fetching submitting answer data:", innerError);
-            } finally {
-            setDisablePreviousBtn(false);
+        if (!isCorrect) {
+            setShowExplanation(prev => ({
+                ...prev,
+                [questionId]: true
+            }));
         }
-    }
-}, [selectedAnswers, mcqQuestions, studentId, subject, subjectId, weekNumber, dayNumber]);
+
+        setAnsweredQuestions(prev => {
+            const newSet = new Set(prev);
+            newSet.add(questionId);
+            return newSet;
+        });
+
+        const currentQuestion = mcqQuestions.find(q => q.Qn_name === questionId);
+
+        if (currentQuestion) {
+            const submissionData = {
+                student_id: studentId,
+                question_id: questionId,
+                correct_ans: correctAnswer,
+                entered_ans: selectedAnswers[questionId],
+                subject_id: subjectId,
+                subject: subject.split(" ")[0],
+                week_number: weekNumber,
+                day_number: parseInt(dayNumber)
+            };
+
+            setDisablePreviousBtn(true);
+            const url="https://staging-exskilence-be.azurewebsites.net/api/student/practicemcq/submit/"
+            try {
+                const response = await axios.post(
+                    url,
+                    submissionData
+                );
+
+                setMcqQuestions(prevQuestions =>
+                    prevQuestions.map(question =>
+                        question.Qn_name === questionId
+                            ? { ...question, score: response.data.score }
+                            : question
+                    )
+                );
+            }catch (innerError: any) {
+                const errorData = innerError.response?.data || {
+                    message: innerError.message,
+                    stack: innerError.stack
+                };
+    
+                const body = {
+                    student_id: actualStudentId,
+                    Email: actualEmail,
+                    Name: actualName,
+                    URL_and_Body: `${url}\n + ""`,
+                    error: errorData.error,
+                };
+    
+                try {
+                    await axios.post(
+                    "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                    body
+                    );
+                } catch (loggingError) {
+                    console.error("Error logging the submitting answer error:", loggingError);
+                }
+    
+                console.error("Error fetching submitting answer data:", innerError);
+                } finally {
+                setDisablePreviousBtn(false);
+            }
+        }
+    }, [selectedAnswers, mcqQuestions, studentId, subject, subjectId, weekNumber, dayNumber]);
  
 
     const [pdfUrl, setPdfUrl] = useState('');
@@ -746,7 +761,9 @@ const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer:
         const notesUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.notes?.[currentNotesIndex];
         const lessonVideoUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.lesson?.[currentLessonIndex] || '';
 
-        if (notesUrl && notesUrl.endsWith('.pdf')) {
+        if (sessionStorage.getItem("lastContentType") === "notes")
+        {
+            if (notesUrl && notesUrl.endsWith('.pdf')) {
             setPdfLoading(true);
             setPdfError(false);
             setLoading(true);
@@ -797,8 +814,9 @@ const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer:
                 setLoading(false);
             }
         }
-
-        if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
+        }
+        else{
+            if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
             setVideoLoading(true);
             setVideoError(false);
             
@@ -839,10 +857,16 @@ const handleSubmitAnswer = useCallback(async (questionId: string, correctAnswer:
                 setVideoLoading(false);
               });
           }
+        }
+
+        
     };
 
-    fetchMedia();
-}, [chapters, currentSubTopicIndex, currentNotesIndex, currentLessonIndex]);
+    let lastcontent=sessionStorage.getItem("lastContentType");
+    if (lastcontent=="lesson"|| lastcontent=="" || lastcontent==null || lastcontent=="notes") {
+        fetchMedia();
+    }
+}, [chapters, currentSubTopicIndex, currentNotesIndex, currentLessonIndex, sessionStorage.getItem('lastContentType')]);
  
 
     const renderLessonContent = () => {
@@ -1775,45 +1799,6 @@ const handlePrevious = useCallback(() => {
         );
     };
 
-    
-    // const handleSubTopicContentClick = useCallback(async (event: React.MouseEvent,index: number, contentType: 'lesson' | 'notes' | 'mcq' | 'coding') => {
-    //     event.stopPropagation();
-    //     const subTopic = chapters[0].sub_topic_data[index];
-    
-    //     sessionStorage.setItem("currentSubTopicId", subTopic.subtopicid);
-    
-    //     setCurrentSubTopicIndex(index);
-    //     setCurrentContentType(contentType);
-    
-    //     if (contentType === 'lesson' && subTopic.lesson && subTopic.lesson.length > 0) {
-    //         setSelectedContent(subTopic.lesson[0]);
-    //         setCurrentLessonIndex(0);
-    //     } else if (contentType === 'notes' && subTopic.notes && subTopic.notes.length > 0) {
-    //         setSelectedContent(subTopic.notes[0]);
-    //         setContentType('notes');
-    //         setCurrentNotesIndex(0);
-    //     } else if (contentType === 'mcq') {
-    //         await fetchMCQQuestions(index);
-    //         setCurrentMCQIndex(0);
-    //     } else if (contentType === 'coding') {
-    //         await fetchCodingQuestions(index);
-    //     }
-    
-    //     handleViewChange(contentType);
-    // }, [chapters, fetchMCQQuestions, fetchCodingQuestions]);
-    
-    // useEffect(() => {
-    //     if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
-    //         fetchMCQQuestions(0);
-    //         setHasFetched(true);
-    //       }
-
-    //       if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
-    //         fetchCodingQuestions(0);
-    //         setHasFetched(true);
-    //       }
-    // }, [fetchMCQQuestions, fetchCodingQuestions, studentId, subject, dayNumber]);
-
     const handleSubTopicContentClick = useCallback(async (event: React.MouseEvent, index: number, contentType: 'lesson' | 'notes' | 'mcq' | 'coding') => {
     event.stopPropagation();
 
@@ -1846,16 +1831,34 @@ const handlePrevious = useCallback(() => {
     handleViewChange(contentType);
 }, [chapters, fetchMCQQuestions, fetchCodingQuestions, hasFetched]);
 
-    useEffect(() => {
-    if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
-        Promise.all([
-            fetchMCQQuestions(0),
-            fetchCodingQuestions(0)
-        ]).then(() => {
-            setHasFetched(true);
-        });
+//     useEffect(() => {
+//     if (!hasFetched && sessionStorage.getItem('currentSubTopicId') != null) {
+//         Promise.all([
+//             fetchMCQQuestions(0),
+//             fetchCodingQuestions(0)
+//         ]).then(() => {
+//             setHasFetched(true);
+//         });
+//     }
+// }, [fetchMCQQuestions, fetchCodingQuestions, studentId, subject, dayNumber]);
+
+const [requestedContent, setRequestedContent] = useState<string[]>([]); // Adjust the type as necessary
+
+useEffect(() => {
+    const requestedContentTypes = sessionStorage.getItem('lastContentType') ||'';
+    console.log('123',requestedContentTypes);
+    if ( sessionStorage.getItem('currentSubTopicId') != null) {
+        if (requestedContentTypes.includes('mcq')) {
+            fetchMCQQuestions(0);
+        }
+
+        if (requestedContentTypes.includes('coding')) {
+            fetchCodingQuestions(0);
+        }
+
+        setHasFetched(true);
     }
-}, [fetchMCQQuestions, fetchCodingQuestions, studentId, subject, dayNumber]);
+}, [ studentId, subject, dayNumber, requestedContent]);
 
 
 return (
@@ -1927,7 +1930,7 @@ return (
                         </Spinner>
                     </div>
                 )}
-        <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
+        <Modal centered show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
             <Modal.Header closeButton>
                 <Modal.Title>Message</Modal.Title>
             </Modal.Header>
