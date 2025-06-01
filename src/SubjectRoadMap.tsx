@@ -16,7 +16,7 @@ import { FcTodoList } from "react-icons/fc";
 import { LiaLaptopCodeSolid } from "react-icons/lia";
 import { useNavigate } from 'react-router-dom';
 import { CiSquareChevUp } from "react-icons/ci";
- 
+import { FaExclamationTriangle } from 'react-icons/fa';
 import { BsListTask } from "react-icons/bs";
 import { set } from 'date-fns';
 import { overflow } from 'html2canvas/dist/types/css/property-descriptors/overflow';
@@ -1930,11 +1930,13 @@ return (
                         </Spinner>
                     </div>
                 )}
-        <Modal centered show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
-            <Modal.Header closeButton>
-                <Modal.Title>Message</Modal.Title>
+        <Modal className='modal-lg' centered show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
+            <Modal.Header className='bg-warning' closeButton>
+                <Modal.Title>Message <FaExclamationTriangle size={20} className="mb-1 blink" /></Modal.Title>
             </Modal.Header>
-            <Modal.Body>{modalMessage}</Modal.Body>
+            <Modal.Body>
+                <pre>{modalMessage}</pre>
+            </Modal.Body>
         </Modal>
     </div>
 );
