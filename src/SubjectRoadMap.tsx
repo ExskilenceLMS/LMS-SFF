@@ -77,6 +77,7 @@ const SubjectRoadMap: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [disablePreviousBtn, setDisablePreviousBtn] = useState<boolean>(true);
     const [disableNextBtn, setDisableNextBtn] = useState<boolean>(true);
+    const [disableStatusNextBtn, setDisableStatusNextBtn] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [chapters, setChapters] = useState<Chapter[]>([]);
     const [mcqQuestions, setMcqQuestions] = useState<MCQQuestion[]>([]);
@@ -1184,6 +1185,7 @@ const renderMCQContent = () => {
     };
 
 const handleNext = useCallback(async () => {
+    setDisableStatusNextBtn(true);
     const unlockedSubtopicsArray = JSON.parse(sessionStorage.getItem('unlockedSubtopics') || '[]');
 
     if (unlockedSubtopicsArray.length === 0) {
@@ -1578,6 +1580,7 @@ const handleNext = useCallback(async () => {
             }
         }
     }
+    setDisableStatusNextBtn(false);
 }, [currentView, currentLessonIndex, currentNotesIndex, currentMCQIndex, chapters, currentSubTopicIndex, studentId, subject, subjectId, dayNumber, weekNumber]);
  
 
@@ -1842,7 +1845,7 @@ const handlePrevious = useCallback(() => {
 //     }
 // }, [fetchMCQQuestions, fetchCodingQuestions, studentId, subject, dayNumber]);
 
-const [requestedContent, setRequestedContent] = useState<string[]>([]); // Adjust the type as necessary
+const [requestedContent, setRequestedContent] = useState<string[]>([]); 
 
 useEffect(() => {
     const requestedContentTypes = sessionStorage.getItem('lastContentType') ||'';
@@ -1914,7 +1917,7 @@ return (
                                 <button className="btn btn-sm btn-outline-light PN-button text-light px-2 py-1 rounded-2" onClick={handlePrevious} disabled={isPreviousButtonDisabled() || disablePreviousBtn}>
                                     Previous
                                 </button>
-                                <button className="btn btn-sm btn-outline-light PN-button text-light px-2 py-1 rounded-2" onClick={handleNext}>
+                                <button className="btn btn-sm btn-outline-light PN-button text-light px-2 py-1 rounded-2" onClick={handleNext} disabled={disableStatusNextBtn}>
                                     Next
                                 </button>
                             </div>
