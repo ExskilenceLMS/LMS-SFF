@@ -71,7 +71,7 @@ function App() {
     window.location.href = '/'; 
     }
     catch (error){
-      console.error("Login error")
+      // console.error("Login error")
     }
   }, [studentId]);
 
@@ -106,7 +106,7 @@ function App() {
   return (
     <Detector
       polling={{
-        url: '/varun',
+        url: '/internet-info',
         enabled: true,
         timeout: 2000,
         interval: 10000

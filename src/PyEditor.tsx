@@ -407,7 +407,7 @@ const handleNext = () => {
         TestCases: questions[currentQuestionIndex].TestCases,
         Attempt: 0
       };
-      console.log("Post data:", postData);
+      // console.log("Post data:", postData);
 
       const response = await axios.post(
         url,

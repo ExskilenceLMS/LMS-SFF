@@ -125,10 +125,10 @@ const encryptedStudentId = sessionStorage.getItem('StudentId');
                 body
                 );
             } catch (loggingError) {
-                console.error("Error logging the Detail panel error:", loggingError);
+                // console.error("Error logging the Detail panel error:", loggingError);
             }
             
-            console.error("Error fetching Detail panel data:", innerError);
+            // console.error("Error fetching Detail panel data:", innerError);
             }
 finally {
       setLoading(false);

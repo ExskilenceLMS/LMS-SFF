@@ -112,7 +112,7 @@ const Login: React.FC = () => {
 
             const response = await axios.get(url);
 
-            console.log("Response Status:", response);
+            // console.log("Response Status:", response);
  
             const encryptedStudentId = CryptoJS.AES.encrypt(response.data.student_id, secretKey).toString();
 

@@ -221,7 +221,7 @@ const fetchRoadmapData = async () => {
         );
 
         allSubtopicIdsList = allSubtopicIds;
-        console.log("All Subtopic IDs:", allSubtopicIdsList);
+        // console.log("All Subtopic IDs:", allSubtopicIdsList);
 
         if (responseData.length > 0) {
             const chapter = responseData[0];
@@ -254,10 +254,10 @@ const fetchRoadmapData = async () => {
             let currentSubTopicId = sessionStorage.getItem("currentSubTopicId");
 
             if (currentSubTopicId && unlockSubTopicId.length) {
-                console.log('xyz');
-                console.log(currentSubTopicId, unlockSubTopicId);
+                // console.log('xyz');
+                // console.log(currentSubTopicId, unlockSubTopicId);
                 let index = unlockSubTopicId.indexOf(currentSubTopicId);
-                console.log(index);
+                // console.log(index);
                 sessionStorage.setItem("lastSubTopicIndex", index.toString());
             }
 
@@ -757,18 +757,191 @@ const fetchRoadmapData = async () => {
     const [pdfLoading, setPdfLoading] = useState(false);
     const [videoLoading, setVideoLoading] = useState(false);
 
-    useEffect(() => {
+//     useEffect(() => {
+//     const fetchMedia = async () => {
+//         const notesUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.notes?.[currentNotesIndex];
+//         const lessonVideoUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.lesson?.[currentLessonIndex] || '';
+
+//         if (sessionStorage.getItem("lastContentType") === "notes")
+//         {
+//             if (notesUrl && notesUrl.endsWith('.pdf')) {
+//             setPdfLoading(true);
+//             setPdfError(false);
+//             setLoading(true);
+//             const url='https://staging-exskilence-be.azurewebsites.net/media/';
+//             try {
+//                 const response = await fetch(url, {
+//                     method: 'POST',
+//                     headers: { 'Content-Type': 'application/json' },
+//                     body: JSON.stringify({ file_url: notesUrl })
+//                 });
+
+//                 if (!response.ok) {
+//                     throw new Error(`HTTP error! status: ${response.status}`);
+//                 }
+
+//                 const blob = await response.blob();
+//                 const processedUrl = URL.createObjectURL(blob);
+//                 setPdfUrl(processedUrl);
+//             } 
+//             catch (innerError: any) {
+//                 setPdfError(true);
+//             const errorData = innerError.response?.data || {
+//                 message: innerError.message,
+//                 stack: innerError.stack
+//             };
+ 
+//             const body = {
+//                 student_id: actualStudentId,
+//                 Email: actualEmail,
+//                 Name: actualName,
+//                 URL_and_Body: `${url}\n + ""`,
+//                 error: errorData.error,
+//             };
+ 
+//             try {
+//                 await axios.post(
+//                 "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+//                 body
+//                 );
+//             } catch (loggingError) {
+//                 console.error("Error logging the pdf error:", loggingError);
+//             }
+ 
+//             console.error("Error fetching pdf data:", innerError);
+//             }
+//              finally {
+//                 setPdfLoading(false);
+//                 setLoading(false);
+//             }
+//         }
+//         }
+//         // else{
+//         //     if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
+//         //     setVideoLoading(true);
+//         //     setVideoError(false);
+//         //     setVideoUrl('');
+//         //     const url = 'https://staging-exskilence-be.azurewebsites.net/media/';
+            
+//         //     axios.post(url, { file_url: lessonVideoUrl })
+//         //       .then(response => {
+//         //         const blob = response.data.url;  
+//         //         const processedUrl = URL.createObjectURL(blob);
+//         //         console.log("Video URL:", processedUrl);
+//         //         setVideoUrl(blob);
+//         //       })
+//         //       .catch(innerError => {
+//         //         setVideoError(true);
+//         //         const errorData = innerError.response?.data || {
+//         //           message: innerError.message,
+//         //           stack: innerError.stack
+//         //         };
+      
+//         //         const body = {
+//         //           student_id: actualStudentId,
+//         //           Email: actualEmail,
+//         //           Name: actualName,
+//         //           URL_and_Body: `${url}\n + ""`,
+//         //           error: errorData.error,
+//         //         };
+      
+//         //         axios.post(
+//         //           "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+//         //           body
+//         //         ).catch(loggingError => {
+//         //           console.error("Error logging the error:", loggingError);
+//         //         });
+      
+//         //         console.error("Error fetching video:", innerError);
+//         //       })
+//         //       .finally(() => {
+//         //         setVideoLoading(false);
+//         //       });
+//         //   }
+//         // }
+//         //Old  method
+//         // else
+//         // {
+//         //     if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
+//         //         setVideoLoading(true);
+//         //         setVideoError(false);
+//         //         setLoading(true);
+//         //         setVideoUrl('');
+//         //         fetch('https://live-exskilence-be.azurewebsites.net/media/', {
+//         //             method: 'POST',
+//         //             headers: { 'Content-Type': 'application/json' },
+//         //             body: JSON.stringify({ file_url: lessonVideoUrl })
+//         //         })
+//         //         .then(response => {
+//         //             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+//         //             return response.blob();
+//         //         })
+//         //         .then(blob => {
+//         //             const processedUrl = URL.createObjectURL(blob);
+//         //             setVideoUrl(processedUrl);
+//         //             setVideoLoading(false);
+//         //             setLoading(false);
+//         //         })
+//         //       .catch(innerError => {
+//         //         setVideoError(true);
+//         //         const errorData = innerError.response?.data || {
+//         //           message: innerError.message,
+//         //           stack: innerError.stack
+//         //         };
+      
+//         //         const body = {
+//         //           student_id: actualStudentId,
+//         //           Email: actualEmail,
+//         //           Name: actualName,
+//         //           URL_and_Body: `${url}\n + ""`,
+//         //           error: errorData.error,
+//         //         };
+      
+//         //         axios.post(
+//         //           "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+//         //           body
+//         //         ).catch(loggingError => {
+//         //           console.error("Error logging the error:", loggingError);
+//         //         });
+      
+//         //         console.error("Error fetching video:", innerError);
+//         //       })
+//         //       .finally(() => {
+//         //         setVideoLoading(false);
+//         //       });
+//         //   }
+//         // }
+//         //Old method with aync await
+        
+        
+//     };
+
+//     let lastcontent=sessionStorage.getItem("lastContentType");
+//     if (lastcontent=="lesson"|| lastcontent=="" || lastcontent==null || lastcontent=="notes") {
+//         fetchMedia();
+//     }
+// }, [chapters, currentSubTopicIndex, currentNotesIndex, currentLessonIndex, sessionStorage.getItem('lastContentType')]);
+ 
+
+useEffect(() => {
     const fetchMedia = async () => {
         const notesUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.notes?.[currentNotesIndex];
         const lessonVideoUrl = chapters[0]?.sub_topic_data[currentSubTopicIndex]?.lesson?.[currentLessonIndex] || '';
 
-        if (sessionStorage.getItem("lastContentType") === "notes")
-        {
-            if (notesUrl && notesUrl.endsWith('.pdf')) {
+        if (sessionStorage.getItem("lastContentType") === "notes") {
+            await fetchNotes(notesUrl);
+        } else {
+            await fetchVideo(lessonVideoUrl);
+        }
+    };
+
+    const fetchNotes = async (notesUrl: string) => {
+        if (notesUrl && notesUrl.endsWith('.pdf')) {
             setPdfLoading(true);
             setPdfError(false);
             setLoading(true);
-            const url='https://staging-exskilence-be.azurewebsites.net/media/';
+            const url = 'https://staging-exskilence-be.azurewebsites.net/media/';
+
             try {
                 const response = await fetch(url, {
                     method: 'POST',
@@ -783,92 +956,96 @@ const fetchRoadmapData = async () => {
                 const blob = await response.blob();
                 const processedUrl = URL.createObjectURL(blob);
                 setPdfUrl(processedUrl);
-            } 
-            catch (innerError: any) {
+            } catch (innerError: any) {
                 setPdfError(true);
-            const errorData = innerError.response?.data || {
-                message: innerError.message,
-                stack: innerError.stack
-            };
- 
-            const body = {
-                student_id: actualStudentId,
-                Email: actualEmail,
-                Name: actualName,
-                URL_and_Body: `${url}\n + ""`,
-                error: errorData.error,
-            };
- 
-            try {
-                await axios.post(
-                "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
-                body
-                );
-            } catch (loggingError) {
-                console.error("Error logging the pdf error:", loggingError);
-            }
- 
-            console.error("Error fetching pdf data:", innerError);
-            }
-             finally {
+                const errorData = innerError.response?.data || {
+                    message: innerError.message,
+                    stack: innerError.stack
+                };
+
+                const body = {
+                    student_id: actualStudentId,
+                    Email: actualEmail,
+                    Name: actualName,
+                    URL_and_Body: `${url}\n + ""`,
+                    error: errorData.error,
+                };
+
+                try {
+                    await axios.post(
+                        "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                        body
+                    );
+                } catch (loggingError) {
+                    console.error("Error logging the pdf error:", loggingError);
+                }
+
+                console.error("Error fetching pdf data:", innerError);
+            } finally {
                 setPdfLoading(false);
                 setLoading(false);
             }
         }
-        }
-        else{
-            if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
-            setVideoLoading(true);
-            setVideoError(false);
-            
-            const url = 'https://staging-exskilence-be.azurewebsites.net/media/';
-            
-            axios.post(url, { file_url: lessonVideoUrl })
-              .then(response => {
-                const blob = response.data.url;  
-                // const processedUrl = URL.createObjectURL(blob);
-                console.log("Video URL:", blob);
-                setVideoUrl(blob);
-              })
-              .catch(innerError => {
-                setVideoError(true);
-                const errorData = innerError.response?.data || {
-                  message: innerError.message,
-                  stack: innerError.stack
-                };
-      
-                const body = {
-                  student_id: actualStudentId,
-                  Email: actualEmail,
-                  Name: actualName,
-                  URL_and_Body: `${url}\n + ""`,
-                  error: errorData.error,
-                };
-      
-                axios.post(
-                  "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
-                  body
-                ).catch(loggingError => {
-                  console.error("Error logging the error:", loggingError);
-                });
-      
-                console.error("Error fetching video:", innerError);
-              })
-              .finally(() => {
-                setVideoLoading(false);
-              });
-          }
-        }
-
-        
     };
 
-    let lastcontent=sessionStorage.getItem("lastContentType");
-    if (lastcontent=="lesson"|| lastcontent=="" || lastcontent==null || lastcontent=="notes") {
+    const fetchVideo = async (lessonVideoUrl: string) => {
+        if (lessonVideoUrl && lessonVideoUrl.endsWith('.mp4')) {
+            setVideoLoading(true);
+            setVideoError(false);
+            setLoading(true);
+            setVideoUrl('');
+
+            try {
+                const response = await fetch('https://staging-exskilence-be.azurewebsites.net/media/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_url: lessonVideoUrl })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const processedUrl = URL.createObjectURL(blob);
+                setVideoUrl(processedUrl);
+            } catch (innerError: any) {
+                setVideoError(true);
+                const errorData = innerError.response?.data || {
+                    message: innerError.message,
+                    stack: innerError.stack
+                };
+
+                const body = {
+                    student_id: actualStudentId,
+                    Email: actualEmail,
+                    Name: actualName,
+                    URL_and_Body: `${lessonVideoUrl}\n + ""`,
+                    error: errorData.error,
+                };
+
+                try {
+                    await axios.post(
+                        "https://staging-exskilence-be.azurewebsites.net/api/errorlog/",
+                        body
+                    );
+                } catch (loggingError) {
+                    console.error("Error logging the error:", loggingError);
+                }
+
+                console.error("Error fetching video:", innerError);
+            } finally {
+                setVideoLoading(false);
+                setLoading(false);
+            }
+        }
+    };
+
+    let lastContent = sessionStorage.getItem("lastContentType");
+    if (lastContent === "lesson" || lastContent === "" || lastContent === null || lastContent === "notes") {
         fetchMedia();
     }
 }, [chapters, currentSubTopicIndex, currentNotesIndex, currentLessonIndex, sessionStorage.getItem('lastContentType')]);
- 
 
     const renderLessonContent = () => {
         if (loading) {
@@ -1250,7 +1427,7 @@ const handleNext = useCallback(async () => {
                             }
                         } else if (response3.data.message === "Day Completed") {
                             navigate("/SubjectOverview");
-                            console.log(allSubtopicIdsList);
+                            // console.log(allSubtopicIdsList);
                         } else {
                             setShowUpdateModal(true);
                             setModalMessage(response3.data.qns_status);
@@ -1327,7 +1504,7 @@ const handleNext = useCallback(async () => {
                             }
                         } else if (response3.data.message === "Day Completed") {
                             navigate("/SubjectOverview");
-                            console.log(allSubtopicIdsList);
+                            // console.log(allSubtopicIdsList);
                         } else {
                             setShowUpdateModal(true);
                             setModalMessage(response3.data.qns_status);
@@ -1415,7 +1592,7 @@ const handleNext = useCallback(async () => {
                                     }
                                 } else if (response3.data.message === "Day Completed") {
                                     navigate("/SubjectOverview");
-                                    console.log(allSubtopicIdsList);
+                                    // console.log(allSubtopicIdsList);
                                 } else {
                                     setShowUpdateModal(true);
                                     setModalMessage(response3.data.qns_status);
@@ -1498,7 +1675,7 @@ const handleNext = useCallback(async () => {
                     }
                 } else if (response3.data.message === "Day Completed") {
                     navigate("/SubjectOverview");
-                    console.log(allSubtopicIdsList);
+                    // console.log(allSubtopicIdsList);
                 } else {
                     setShowUpdateModal(true);
                     setModalMessage(response3.data.qns_status);
@@ -1547,7 +1724,7 @@ const handleNext = useCallback(async () => {
                     setDisablePreviousBtn(false);
                 } else if (response3.data.message === "Day Completed") {
                     navigate("/SubjectOverview");
-                    console.log(allSubtopicIdsList);
+                    // console.log(allSubtopicIdsList);
                 } else {
                     setShowUpdateModal(true);
                     setModalMessage(response3.data.qns_status);
@@ -1585,13 +1762,12 @@ const handleNext = useCallback(async () => {
  
 
 const handlePrevious = useCallback(() => {
-    console.log('handleprevious')
+    // console.log('handleprevious')
     if (currentView === 'lesson') {
-        console.log('lesson')
+        // console.log('lesson')
         if (currentLessonIndex > 0) {
-            console.log('.0')
+            // console.log('.0')
              handlePreviousLesson();
-            
 
         } else if (currentSubTopicIndex > 0) {
             const prevSubTopicIndex = currentSubTopicIndex - 1;
@@ -1603,10 +1779,10 @@ const handlePrevious = useCallback(() => {
         let currentSubTopicId = sessionStorage.getItem("currentSubTopicId");
 
         if (currentSubTopicId && unlockSubTopicId.length) {
-            console.log('xyz');
-            console.log(currentSubTopicId, unlockSubTopicId);
+            // console.log('xyz');
+            // console.log(currentSubTopicId, unlockSubTopicId);
             let index = unlockSubTopicId.indexOf(currentSubTopicId);
-            console.log(index); 
+            // console.log(index); 
             sessionStorage.setItem("lastSubTopicIndex", Number(index-1).toString());
             sessionStorage.setItem("currentSubTopicId", unlockSubTopicId[index-1]);
         }
@@ -1849,7 +2025,7 @@ const [requestedContent, setRequestedContent] = useState<string[]>([]);
 
 useEffect(() => {
     const requestedContentTypes = sessionStorage.getItem('lastContentType') ||'';
-    console.log('123',requestedContentTypes);
+    // console.log('123',requestedContentTypes);
     if ( sessionStorage.getItem('currentSubTopicId') != null) {
         if (requestedContentTypes.includes('mcq')) {
             fetchMCQQuestions(0);
@@ -1933,14 +2109,19 @@ return (
                         </Spinner>
                     </div>
                 )}
-        <Modal className='modal-lg' centered show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
-            <Modal.Header className='bg-warning' closeButton>
-                <Modal.Title>Message <FaExclamationTriangle size={20} className="mb-1 blink" /></Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <pre>{modalMessage}</pre>
-            </Modal.Body>
-        </Modal>
+            <Modal className='my-5' centered show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
+                <Modal.Header style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} className='bg-warning' >
+                    <Modal.Title className='ModalTitle' style={{ fontSize: '20px' }}>
+                        <FaExclamationTriangle size={20} className="mb-1 blink" /> Message
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className='pt-3 text-center'>
+                    <pre style={{ fontSize: '18px' }}>{modalMessage}</pre>
+                    <div className='d-flex justify-content-center pt-3'>
+                        <button className='btn btn-secondary' onClick={() => setShowUpdateModal(false)}>Close</button>
+                    </div>
+                </Modal.Body>
+            </Modal>
     </div>
 );
 
