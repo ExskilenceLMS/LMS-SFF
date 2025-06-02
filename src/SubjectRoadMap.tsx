@@ -867,7 +867,7 @@ const fetchRoadmapData = async () => {
 //         //         setVideoError(false);
 //         //         setLoading(true);
 //         //         setVideoUrl('');
-//         //         fetch('https://live-exskilence-be.azurewebsites.net/media/', {
+//         //         fetch('https://staging-exskilence-be.azurewebsites.net/media/', {
 //         //             method: 'POST',
 //         //             headers: { 'Content-Type': 'application/json' },
 //         //             body: JSON.stringify({ file_url: lessonVideoUrl })
@@ -1224,10 +1224,31 @@ const renderMCQContent = () => {
                     <div className="p-3">
                         <div className="mb-4">
                             <div className="d-flex justify-content-between mb-3">
-                                <div style={{width:'85%'}}>{currentQuestion.question}</div>
+                                {/* <div style={{width:'85%'}}><pre style={{ fontWeight: 'bold', fontSize: '16px', fontFamily: 'inherit' }}>{currentQuestion.question}</pre></div> */}
+                            {/* <div style={{ width: '85%' }}>
+                            <pre style={{ fontWeight: 'bold', fontSize: '16px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                                {currentQuestion.question.replace(/\r/g, '\t')}
+                            </pre>
+                            </div> */}
+                            <div style={{ width: '85%' }}>
+                            {/* <pre style={{ fontWeight: 'bold', fontSize: '16px', fontFamily: 'monospace' }}>
+                                {currentQuestion.question
+                                .replace(/\r\n/g, '\n')                    
+                                .replace(/ +\n/g, '\n')                    
+                                .replace(/\n(?!\n)(?!if|elif|else)/g, '\n\t') 
+                                }
+                            </pre> */}
+                            <pre style={{
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                overflowWrap: 'break-word',
+                                width: '100%'
+                            }}>{currentQuestion.question}</pre>
+                            </div>
+                                {/* <div style={{width:'85%'}}>{currentQuestion.question}</div> */}
                                 <div>Score : {score}</div>
                             </div>
-
+                            
                             <div className="row g-2">
                                 {shuffledOptions.map((option: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined, index: React.Key | null | undefined) => {
                                     const isSelected = selectedAnswers[questionId] === option;
@@ -1315,7 +1336,7 @@ const renderMCQContent = () => {
         }
 
         return (
-            <div className="p-3">
+            <div className="p-3 CodingInfo" style={{ height: '88%', overflow: 'auto' }}>
                 {codingQuestions.map((question) => (
                     <div key={question.id} className="mb-4">
                         <div className="d-flex align-items-start justify-content-between">
@@ -1325,19 +1346,19 @@ const renderMCQContent = () => {
                                     <span style={{ wordBreak: 'break-word' }}>
                                         {question.question.length >
                                             (window.innerWidth < 600
-                                            ? 50
+                                            ? 30
                                             : window.innerWidth < 1024
-                                            ? 80
-                                            : 100)
+                                            ? 50
+                                            : 80)
                                             ? question.question.slice(
                                                 0,
                                                 window.innerWidth < 1000
-                                                ? 50
+                                                ? 30
                                                 : window.innerWidth < 1200
-                                                ? 80
+                                                ? 50
                                                 : window.innerWidth < 1400
-                                                ? 100
-                                                : 140
+                                                ? 80
+                                                : 100
                                             ) + "..."
                                             : question.question}
                                         </span>

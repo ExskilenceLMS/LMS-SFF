@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { secretKey } from "../constants";
+import CryptoJS from "crypto-js";
 interface Question {
   level: string;
   CreatedBy: string;

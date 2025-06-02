@@ -99,6 +99,10 @@ const Header: React.FC = () => {
       navigate(`/SubjectOverview`);
       return ;
     }
+    if (location.pathname.includes("SubjectOverview")) {
+      navigate(`/Dashboard`);
+      return ;
+    }
     navigate(-1)
    }
 

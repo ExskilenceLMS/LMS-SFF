@@ -354,6 +354,15 @@ const handleNext = () => {
 
 
   const handleCheckCode = async () => {
+  if (!Ans.trim()) {
+    return;
+  }
+
+  if (questions[currentQuestionIndex]?.Qn_name) {
+    const codeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
+    sessionStorage.setItem(codeKey, Ans);
+  }
+
     if (questions[currentQuestionIndex]?.Qn_name) {
       const codeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
       sessionStorage.setItem(codeKey, Ans);
@@ -544,7 +553,6 @@ const handleSubmit = async () => {
     const codeKey = getUserCodeKey(questions[currentQuestionIndex].Qn_name);
     sessionStorage.setItem(codeKey, Ans);
 
-    // Encrypt and store the submit status in session storage
     const submitStatusKey = `submitStatus_${studentId}_${subject}_${weekNumber}_${dayNumber}_${questions[currentQuestionIndex].Qn_name}`;
     sessionStorage.setItem(submitStatusKey, encryptData("true"));
 
@@ -620,14 +628,13 @@ const handleSubmit = async () => {
 
                   {/* Problem Statement */}
                   <div className="col-5 lg-8 bg-white" style={{ height: "100%", display: "flex", flexDirection: "column", marginLeft: "-10px", marginRight: "10px" }}>
-                    <div className="bg-white" style={{ height: "45%", backgroundColor: "#E5E5E533" }}>
-                      <div className="p-3 flex-grow-1 overflow-auto">
-                        <p>{questions[currentQuestionIndex]?.Qn}</p>
+                    <div className="bg-white" style={{ height: "100%", backgroundColor: "#E5E5E533" }}>
+                      <div className="p-3 flex-grow-1 ">
+                        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{questions[currentQuestionIndex]?.Qn}</pre>
                       </div>
                     </div>
-                    <div className="bg-white" style={{ height: "50%", backgroundColor: "#E5E5E533" }}>
-                      {/* Additional content or tabs can go here */}
-                    </div>
+                    {/* <div className="bg-white" style={{ height: "50%", backgroundColor: "#E5E5E533" }}>
+                    </div> */}
                   </div>
 
                   {/* Editor Section */}
@@ -642,6 +649,7 @@ const handleSubmit = async () => {
                         showPrintMargin={false}
                         // showGutter={false}
                         // highlightActiveLine={false}
+                        placeholder="Enter your code here"
                         wrapEnabled={true}
                         className="pe-3"
                         style={{ width: "95%", height: "calc(100% - 60px)", marginTop: "20px", margin: '15px' }}
@@ -672,7 +680,7 @@ const handleSubmit = async () => {
                               height: "30px"
                             }}
                             onClick={handleCheckCode}
-                            disabled={processing}
+                            disabled={processing || !Ans.trim()}
                           >
                             RUN CODE
                           </button>
@@ -714,28 +722,33 @@ const handleSubmit = async () => {
                     {/* Output Section */}
                     <div className="bg-white me-3" style={{ height: "48%", backgroundColor: "#E5E5E533" }}>
                       <div className="p-3 overflow-auto" style={{ height: "calc(100% - 10px)" }}>
-                        <pre
-                          className="m-0"
-                          id="output"
-                          ref={outputRef}
-                          tabIndex={0}
-                          onKeyDown={handleKeyPress}
-                          // width: 100%; color: black; border: 1px solid white; box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 4px; padding: 10px; white-space: pre-wrap; overflow-wrap: break-word; background-color: rgb(255, 255, 255); min-height: 1em;
-                          style={{ 
-                            outline: 'none',
-                            width: '100%',
-                            color: 'black',
-                            border: '1px solid white',
-                            boxShadow: 'rgba(0, 0, 0, 0.25) 0px 4px 4px',
-                            padding: '10px',
-                            whiteSpace: 'pre-wrap',
-                            overflowWrap: 'break-word',
-                            backgroundColor: 'rgb(255, 255, 255)',
-                            minHeight: '1em',
-                           }}
-                        >
-                          {output}
-                        </pre>
+                        {output ? (
+                          <pre
+                            className="m-0 "
+                            id="output"
+                            ref={outputRef}
+                            tabIndex={0}
+                            onKeyDown={handleKeyPress}
+                            // width: 100%; color: black; border: 1px solid white; box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 4px; padding: 10px; white-space: pre-wrap; overflow-wrap: break-word; background-color: rgb(255, 255, 255); min-height: 1em;
+                            style={{ 
+                              outline: 'none',
+                              width: '100%',
+                              color: 'black',
+                              border: '1px solid white',
+                              boxShadow: 'rgba(0, 0, 0, 0.25) 0px 4px 4px',
+                              padding: '10px',
+                              whiteSpace: 'pre-wrap',
+                              overflowWrap: 'break-word',
+                              backgroundColor: 'rgb(255, 255, 255)',
+                              minHeight: '1em',
+                             }}
+                          >
+                            {output}
+                          </pre>
+                        ): (
+                          <p style={{ fontSize: "12px" }}></p>
+                        )}
+
                         {runResponseTestCases && (
                           <div className="col mt-3">
                             {runResponseTestCases.map((testCase, index) => (

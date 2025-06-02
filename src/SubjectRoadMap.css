@@ -114,3 +114,8 @@
   text-align: center;
 justify-content: center;
 }
+
+.CodingInfo{
+  height: 90vh;
+  overflow-y: scroll;
+}
